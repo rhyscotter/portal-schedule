@@ -3,13 +3,15 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Event</title>
+<title>Schedule Event</title>
 <style>
   :root{
     --panel:rgba(17,17,17,.88);
     --border:rgba(255,255,255,.10);
     --text:#fff;
     --muted:rgba(255,255,255,.62);
+
+    /* ✅ THESE GET OVERRIDDEN BY CLUB THEME */
     --accent:#7B2EFF;
     --accent2:#B266FF;
     --clubGlow: rgba(123,46,255,.18);
@@ -29,6 +31,14 @@
     background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.05), rgba(255,255,255,0));
     opacity:.18;pointer-events:none;
   }
+  .stage::after{
+    content:"";position:absolute; inset:0;
+    background:radial-gradient(800px 520px at 80% 18%, var(--clubGlow), transparent 62%);
+    opacity:.9;pointer-events:none;
+    animation:glowPulse 2.8s ease-in-out infinite;
+  }
+  @keyframes glowPulse{ 0%{opacity:.55} 50%{opacity:1} 100%{opacity:.55} }
+
   .wrap{max-width:980px;margin:0 auto;position:relative;z-index:2}
   .title{
     font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;
@@ -46,6 +56,7 @@
     50%{filter:brightness(1.12); transform:translateX(2px)}
     100%{filter:brightness(1); transform:translateX(-2px)}
   }
+
   .sub{color:var(--muted);font-size:13px;margin-top:6px;max-width:650px}
   .pillRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
   .pill{
@@ -57,6 +68,7 @@
   }
   .pill strong{font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;font-size:18px;letter-spacing:.8px}
   .glow{box-shadow:0 0 0 1px rgba(255,255,255,.04), 0 0 32px var(--clubGlow);}
+
   .grid{margin-top:16px;display:grid;grid-template-columns:1.2fr .8fr;gap:14px}
   @media (max-width: 860px){.grid{grid-template-columns:1fr}}
   .panel{
@@ -82,6 +94,7 @@
     transform:scaleX(.35);transform-origin:left;transition:.18s ease;opacity:.95;
   }
   .panel:hover .h2::after{transform:scaleX(1)}
+
   .meta{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
   @media (max-width: 520px){.meta{grid-template-columns:1fr}}
   .box{
@@ -97,6 +110,7 @@
   }
   .label{color:rgba(255,255,255,.62);font-size:11px;font-weight:900;letter-spacing:.9px;text-transform:uppercase}
   .val{margin-top:6px;font-size:14px;line-height:1.45;color:rgba(255,255,255,.92);word-break:break-word}
+
   .countdown{margin-top:10px;display:flex;gap:10px;flex-wrap:wrap}
   .cdCard{
     min-width:120px;border-radius:16px;padding:12px;
@@ -106,6 +120,7 @@
   }
   .cdNum{font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;font-size:34px;letter-spacing:1px;line-height:1}
   .cdLbl{margin-top:6px;color:rgba(255,255,255,.62);font-weight:900;letter-spacing:.9px;text-transform:uppercase;font-size:11px}
+
   .rsvpRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
   .rsvpBtn{
     padding:12px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.14);
@@ -123,11 +138,13 @@
   }
   .rsvpBtn:hover::after{transform:scaleX(1)}
   .rsvpBtn.active{
-    border-color: color-mix(in srgb, var(--accent) 70%, rgba(255,255,255,.18));
-    background: color-mix(in srgb, var(--accent) 18%, rgba(255,255,255,.05));
+    border-color: rgba(255,255,255,.22);
+    background: rgba(255,255,255,.06);
     box-shadow:0 0 34px var(--clubGlow);
   }
+
   .tiny{color:rgba(255,255,255,.62);font-size:12px;margin-top:10px}
+
   .lists{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px}
   .listHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px}
   .tag{
@@ -154,6 +171,7 @@
   .avatar img{width:100%;height:100%;object-fit:cover}
   .personName{font-weight:900;letter-spacing:.2px}
   .personRole{margin-top:2px;color:rgba(255,255,255,.62);font-size:11px;text-transform:uppercase;letter-spacing:.8px;font-weight:900}
+
   .err{margin-top:14px;color:#fff;background:rgba(255,0,0,.12);border:1px solid rgba(255,0,0,.35);padding:12px;border-radius:14px}
 </style>
 </head>
@@ -222,19 +240,21 @@
   </div>
 
 <script>
-  const CLUB_THEMES = {
-    default:    { accent:"#7B2EFF", accent2:"#B266FF", glow:"rgba(123,46,255,.18)" },
-    cherrybrook:{ accent:"#C8102E", accent2:"#FF4B5C", glow:"rgba(200,16,46,.20)" },
-    rumson:     { accent:"#FFFFFF", accent2:"#BDBDBD", glow:"rgba(255,255,255,.10)" },
-    monmouth:   { accent:"#00E5FF", accent2:"#00A3FF", glow:"rgba(0,229,255,.18)" }
-  };
-  function applyClubTheme(clubSlug){
-    const slug = String(clubSlug || "default").trim().toLowerCase();
-    const t = CLUB_THEMES[slug] || CLUB_THEMES.default;
+  // ----------------------------
+  // Theming: prefer payload.theme
+  // ----------------------------
+  function applyThemeFromPayload(payload){
+    const theme = payload?.theme || null;
+
+    // Fallback purple if theme not provided
+    const accent  = (theme?.accent  || "#7B2EFF");
+    const accent2 = (theme?.accent2 || accent);
+    const glow    = (theme?.glow    || "rgba(123,46,255,.18)");
+
     const r = document.documentElement.style;
-    r.setProperty("--accent", t.accent);
-    r.setProperty("--accent2", t.accent2);
-    r.setProperty("--clubGlow", t.glow);
+    r.setProperty("--accent", accent);
+    r.setProperty("--accent2", accent2);
+    r.setProperty("--clubGlow", glow);
   }
 
   const $subtitle = document.getElementById("subtitle");
@@ -340,11 +360,9 @@
       return;
     }
     const now = new Date();
-    let diff = kickoff.getTime() - now.getTime();
+    const diff = kickoff.getTime() - now.getTime();
     if (diff <= 0){
-      $countdownRow.innerHTML = `
-        <div class="cdCard"><div class="cdNum">LIVE</div><div class="cdLbl">Kickoff</div></div>
-      `;
+      $countdownRow.innerHTML = `<div class="cdCard"><div class="cdNum">LIVE</div><div class="cdLbl">Kickoff</div></div>`;
       return;
     }
     const sec = Math.floor(diff/1000);
@@ -369,6 +387,7 @@
     $saveStatus.textContent = "Saving…";
     window.parent.postMessage({ type:"SAVE_RSVP", status }, "*");
   }
+
   $btnYes.addEventListener("click", ()=> sendRsvp("Yes"));
   $btnMaybe.addEventListener("click", ()=> sendRsvp("Maybe"));
   $btnNo.addEventListener("click", ()=> sendRsvp("No"));
@@ -384,31 +403,33 @@
     }
 
     if (data.type === "SCHEDULE_INIT" && data.view === "event"){
-      applyClubTheme(data.clubSlug);
+      // ✅ Apply club theme passed from Wix
+      applyThemeFromPayload(data);
 
-      const hasPlayer = !!data.playerId;
+      const hasPlayer = !!data.playerId; // coaches won't have playerId => view-only
       $rsvpRow.style.display = hasPlayer ? "" : "none";
       $saveStatus.textContent = hasPlayer
         ? "Choose your availability."
-        : "View only — select a player to RSVP.";
+        : "Coach view — RSVP disabled (no player selected).";
 
       const e = data.event || {};
       const dt = e.dateTime ? new Date(e.dateTime) : null;
 
-      const type = String(e.eventType || "").trim();
-      const typeLower = type.toLowerCase();
+      const rawType = String(e.eventType || "").trim();
+      const typeLower = rawType.toLowerCase();
       const isGame = typeLower === "game" || typeLower === "match";
       const title = isGame
         ? (e.opponent ? `Game vs ${e.opponent}` : "Game")
-        : (type || "Session");
+        : (rawType || "Session");
 
       $eventTitle.textContent = title || "Event";
-      $subtitle.textContent = `This Team • Player-based RSVP`;
+      $subtitle.textContent = `RSVP • This Team`;
 
       $dateLine.textContent = dt ? fmtDate(dt) : "—";
       $timeLine.textContent = dt ? fmtTime(dt) : "—";
       $locationLine.textContent = safe(e.location || "—");
 
+      // Optional future fields if you add them to Events:
       const notesParts = [];
       if (e.address) notesParts.push(`Address: ${e.address}`);
       if (e.arrivalTime) notesParts.push(`Arrive: ${e.arrivalTime}`);
@@ -427,7 +448,9 @@
       applyRsvpLists(data.yesCount || 0, data.lists || { yes:[], maybe:[], no:[] });
       setActive(String(data.myStatus || "").toLowerCase());
       $saveStatus.textContent = "Saved ✅";
-      setTimeout(()=> { $saveStatus.textContent = "Choose your availability."; }, 1200);
+      setTimeout(()=> {
+        $saveStatus.textContent = "Choose your availability.";
+      }, 1200);
       return;
     }
   });
