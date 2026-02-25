@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Event</title>
+<style>
+:root{
+  --bg:#000; --card:#111; --border:#1e1e1e; --text:#fff; --muted:#8a8a8a;
+  --accent:#7B2EFF; --accent2:#B266FF;
+  --gameday:var(--accent); --gameday2:var(--accent2);
+}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;color:var(--text);font-family:Arial,sans-serif}
+.stage{
+  min-height:100vh;padding:22px;
+  background:radial-gradient(1000px 600px at 20% -10%, rgba(255,255,255,.05), transparent 60%),
+            linear-gradient(180deg,#000 0%,#050505 100%);
+  position:relative;overflow:hidden;
+}
+.stage::before{content:"";position:absolute;inset:-40% -20%;transform:rotate(-14deg);
+  background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.05), rgba(255,255,255,0));
+  opacity:.18;pointer-events:none;}
+.wrap{max-width:900px;margin:0 auto;position:relative;z-index:2}
+.title{font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;font-size:52px;text-transform:uppercase;letter-spacing:1px;line-height:1;position:relative;padding-bottom:10px;display:inline-block}
+.title::after{content:"";position:absolute;left:0;bottom:0;height:6px;width:100%;border-radius:999px;background:linear-gradient(90deg,var(--gameday),transparent)}
+.meta{margin-top:10px;color:rgba(255,255,255,.72);font-size:13px;line-height:1.45}
+.gameday{
+  margin-top:14px;padding:14px;border-radius:18px;
+  background:linear-gradient(90deg,var(--gameday),var(--gameday2));
+  position:relative;overflow:hidden;display:none;
+}
+.gameday.on{display:block}
+.gameday::before{content:"";position:absolute;inset:0;
+  background:linear-gradient(120deg, rgba(255,255,255,0), rgba(255,255,255,.35), rgba(255,255,255,0));
+  transform:translateX(-70%);animation:sweep 2.8s linear infinite;opacity:.9;pointer-events:none;}
+@keyframes sweep{0%{transform:translateX(-70%)}100%{transform:translateX(70%)}}
+.gTitle{font-family:Impact,sans-serif;text-transform:uppercase;letter-spacing:1px;font-size:18px;position:relative;z-index:2}
+.gSub{margin-top:4px;color:rgba(255,255,255,.88);font-size:13px;position:relative;z-index:2}
+.energyBar{height:3px;border-radius:999px;margin-top:10px;background:linear-gradient(90deg,var(--gameday),var(--gameday2));
+  animation:energyPulse 1.8s ease-in-out infinite;position:relative;z-index:2}
+@keyframes energyPulse{0%{opacity:.6;transform:scaleX(.98)}50%{opacity:1;transform:scaleX(1)}100%{opacity:.6;transform:scaleX(.98)}}
+.box{margin-top:14px;background:rgba(17,17,17,.85);border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:14px;position:relative;overflow:hidden}
+.label{font-family:Impact,sans-serif;text-transform:uppercase;letter-spacing:.9px;font-size:16px;color:rgba(255,255,255,.78)}
+.val{margin-top:8px;font-size:14px;color:rgba(255,255,255,.92);line-height:1.45}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+button{flex:1;min-width:120px;padding:12px;border-radius:16px;border:1px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.04);color:#fff;font-weight:900;letter-spacing:.6px;text-transform:uppercase;
+  cursor:pointer;transition:.14s ease}
+button:hover{transform:translateY(-1px);background:rgba(255,255,255,.09)}
+button.active{border-color:color-mix(in srgb, var(--gameday) 65%, transparent);background:color-mix(in srgb, var(--gameday) 18%, transparent)}
+.err{margin-top:16px;color:#fff;background:rgba(255,0,0,.12);border:1px solid rgba(255,0,0,.35);padding:12px;border-radius:14px}
+</style>
+</head>
+<body>
+<div class="stage"><div class="wrap">
+  <div class="title" id="title">Event</div>
+  <div class="meta" id="meta">Waiting for data…</div>
+
+  <div class="gameday" id="gameday">
+    <div class="gTitle">Game Day Mode</div>
+    <div class="gSub" id="countdown">—</div>
+    <div class="energyBar"></div>
+  </div>
+
+  <div class="box">
+    <div class="label">Location</div>
+    <div class="val" id="loc">—</div>
+  </div>
+
+  <div class="box">
+    <div class="label">Attendance Expected</div>
+    <div class="val" id="att">—</div>
+  </div>
+
+  <div class="box">
+    <div class="label">RSVP</div>
+    <div class="btns">
+      <button id="yes">YES</button>
+      <button id="maybe">MAYBE</button>
+      <button id="no">NO</button>
+    </div>
+    <div class="val" id="rsvpLine">Not responded yet.</div>
+  </div>
+
+  <div id="err"></div>
+</div></div>
+
+<script>
+const CLUB_THEMES = {
+  default: { accent:"#7B2EFF", accent2:"#B266FF" },
+  cherrybrook: { accent:"#C8102E", accent2:"#FF4B5C" },
+  rumson: { accent:"#FFFFFF", accent2:"#BDBDBD" },
+  monmouth: { accent:"#00E5FF", accent2:"#00A3FF" }
+};
+function applyClubTheme(clubSlug){
+  const slug = String(clubSlug||"default").trim().toLowerCase();
+  const t = CLUB_THEMES[slug] || CLUB_THEMES.default;
+  const r = document.documentElement.style;
+  r.setProperty("--accent", t.accent);
+  r.setProperty("--accent2", t.accent2);
+  r.setProperty("--gameday", t.accent);
+  r.setProperty("--gameday2", t.accent2);
+}
+
+const $title = document.getElementById("title");
+const $meta = document.getElementById("meta");
+const $loc = document.getElementById("loc");
+const $att = document.getElementById("att");
+const $gd = document.getElementById("gameday");
+const $countdown = document.getElementById("countdown");
+const $err = document.getElementById("err");
+const $rsvpLine = document.getElementById("rsvpLine");
+
+const btnYes = document.getElementById("yes");
+const btnMaybe = document.getElementById("maybe");
+const btnNo = document.getElementById("no");
+
+function safe(s){ return String(s??"").replace(/[<>]/g,""); }
+function fmt(dt){
+  const d = new Date(dt);
+  return new Intl.DateTimeFormat(undefined,{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}).format(d);
+}
+
+let activeEvent = null;
+let timer = null;
+
+function setActive(status){
+  [btnYes, btnMaybe, btnNo].forEach(b=>b.classList.remove("active"));
+  if (status==="Yes") btnYes.classList.add("active");
+  if (status==="Maybe") btnMaybe.classList.add("active");
+  if (status==="No") btnNo.classList.add("active");
+  $rsvpLine.textContent = status ? `Your RSVP: ${status}` : "Not responded yet.";
+}
+
+function fmtCountdown(ms){
+  if (ms <= 0) return "Kickoff is live.";
+  const s = Math.floor(ms/1000);
+  const days = Math.floor(s/86400);
+  const hrs = Math.floor((s%86400)/3600);
+  const mins = Math.floor((s%3600)/60);
+  const secs = s%60;
+  const dd = days ? `${days}d ` : "";
+  return `${dd}${String(hrs).padStart(2,"0")}:${String(mins).padStart(2,"0")}:${String(secs).padStart(2,"0")} to kickoff`;
+}
+
+function startCountdown(startDt){
+  if (timer) clearInterval(timer);
+  const kickoff = new Date(startDt).getTime();
+  const tick = () => $countdown.textContent = fmtCountdown(kickoff - Date.now());
+  tick();
+  timer = setInterval(tick, 1000);
+}
+
+btnYes.onclick = () => window.parent.postMessage({ type:"SAVE_RSVP", status:"Yes" }, "*");
+btnMaybe.onclick = () => window.parent.postMessage({ type:"SAVE_RSVP", status:"Maybe" }, "*");
+btnNo.onclick = () => window.parent.postMessage({ type:"SAVE_RSVP", status:"No" }, "*");
+
+window.addEventListener("message", (ev) => {
+  const data = ev.data;
+  if (!data) return;
+
+  if (data.type === "SCHEDULE_ERROR"){
+    $err.innerHTML = `<div class="err">${safe(data.message)}</div>`;
+    return;
+  }
+
+  if (data.type === "RSVP_SAVED"){
+    setActive(data.status);
+    return;
+  }
+
+  if (data.type !== "SCHEDULE_INIT") return;
+
+  applyClubTheme(data.clubSlug);
+
+  const e = data.event;
+  activeEvent = e;
+
+  const type = String(e.eventType||"").toLowerCase();
+  const title = type === "game" ? `Game${e.opponent ? " vs " + e.opponent : ""}` : (e.eventType || "Event");
+
+  $title.textContent = title;
+  $meta.innerHTML = `${safe(fmt(e.dateTime))}<br>${safe(e.location||"")}`;
+  $loc.textContent = e.location || "—";
+  $att.textContent = e.attendanceExpected || "—";
+
+  if (type === "game"){
+    $gd.classList.add("on");
+    startCountdown(e.dateTime);
+  } else {
+    $gd.classList.remove("on");
+  }
+
+  setActive(data.rsvpStatus || "");
+});
+</script>
+</body>
+</html>
