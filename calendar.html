@@ -227,6 +227,26 @@ function next(){ cursor.setMonth(cursor.getMonth()+1); render(); }
 function today(){ cursor=new Date(); render(); }
 
 render();
+  const statusEl = document.getElementById("status"); // optional if you have a status element
+
+window.addEventListener("message", (ev) => {
+  const data = ev.data;
+  if (!data) return;
+
+  if (data.type === "SCHEDULE_ERROR") {
+    console.log("Calendar error:", data.message);
+    if (statusEl) statusEl.textContent = data.message;
+    return;
+  }
+
+  if (data.type !== "SCHEDULE_INIT") return;
+
+  console.log("✅ Calendar received events:", data.events?.length || 0);
+
+  // IMPORTANT: use the events coming from Wix CMS
+  applyClubTheme(data.clubSlug);
+  renderCalendar(data.events || []);
+});
 </script>
 
 </body>
