@@ -399,6 +399,13 @@
     if (data.type === "SCHEDULE_ERROR"){
       setError(data.message || "Error loading event.");
       $subtitle.textContent = "Error loading event data.";
+
+      // ✅ ADDED: stop the "Saving…" hang and revert status text
+      $saveStatus.textContent = "Could not save. Try again.";
+      setTimeout(()=> {
+        $saveStatus.textContent = "Choose your availability.";
+      }, 1600);
+
       return;
     }
 
