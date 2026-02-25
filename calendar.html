@@ -1,253 +1,577 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Calendar</title>
-
 <style>
-:root{
-  --bg:#000;
-  --card:#111;
-  --border:#1e1e1e;
-  --text:#fff;
-  --muted:#8a8a8a;
+  :root{
+    --bg:#000;
+    --panel:rgba(17,17,17,.88);
+    --border:rgba(255,255,255,.10);
+    --text:#fff;
+    --muted:rgba(255,255,255,.62);
 
-  --gameday:#7B2EFF;
-  --gameday2:#B266FF;
-}
+    /* theme-driven */
+    --accent:#7B2EFF;
+    --accent2:#B266FF;
+    --clubGlow: rgba(123,46,255,.18);
+  }
 
-*{ box-sizing:border-box; }
-body{
-  margin:0;
-  background:#000;
-  color:#fff;
-  font-family:Arial, sans-serif;
-}
+  *{box-sizing:border-box}
+  body{margin:0;background:transparent;color:var(--text);font-family:Arial,sans-serif}
 
-/* ================= BACKGROUND ================= */
-.stage{
-  min-height:100vh;
-  padding:22px;
-  background:
-    radial-gradient(1000px 600px at 20% -10%, rgba(255,255,255,.05), transparent 60%),
-    linear-gradient(180deg,#000 0%,#050505 100%);
-  position:relative;
-}
-.stage::before{
-  content:"";
-  position:absolute;
-  inset:-40% -20%;
-  transform:rotate(-14deg);
-  background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.05), rgba(255,255,255,0));
-  opacity:.18;
-}
+  .stage{
+    min-height:100vh;
+    padding:22px;
+    background:
+      radial-gradient(1000px 600px at 20% -10%, rgba(255,255,255,.05), transparent 60%),
+      linear-gradient(180deg,#000 0%,#050505 100%);
+    position:relative;
+    overflow:hidden;
+  }
+  .stage::before{
+    content:"";
+    position:absolute; inset:-40% -20%;
+    transform:rotate(-14deg);
+    background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.05), rgba(255,255,255,0));
+    opacity:.18;
+    pointer-events:none;
+  }
 
-.wrap{ max-width:980px; margin:auto; position:relative; z-index:2; }
+  .wrap{max-width:980px;margin:0 auto;position:relative;z-index:2}
 
-/* ================= TITLE ================= */
-.title{
-  font-family:Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
-  font-size:42px;
-  text-transform:uppercase;
-  letter-spacing:1px;
-  position:relative;
-  padding-bottom:14px;
-  display:inline-block;
-}
+  .titleRow{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .title{
+    font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;
+    font-size:52px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    line-height:1;
+    position:relative;
+    padding-bottom:10px;
+  }
 
-/* 🔥 ALWAYS-ANIMATED PURPLE UNDERLINE */
-.title::after{
-  content:"";
-  position:absolute;
-  left:0;
-  bottom:0;
-  height:5px;
-  width:100%;
-  border-radius:999px;
+  /* ✅ always-animated underline under CALENDAR */
+  .title::after{
+    content:"";
+    position:absolute;
+    left:0; bottom:0;
+    height:6px;
+    width:100%;
+    border-radius:999px;
+    background:linear-gradient(90deg, var(--accent), transparent);
+    animation:underlineSweep 1.8s linear infinite;
+  }
+  @keyframes underlineSweep{
+    0%{filter:brightness(1); transform:translateX(-2px)}
+    50%{filter:brightness(1.12); transform:translateX(2px)}
+    100%{filter:brightness(1); transform:translateX(-2px)}
+  }
 
-  background:linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--gameday) 25%,
-    var(--gameday2) 50%,
-    var(--gameday) 75%,
-    transparent 100%
-  );
+  .sub{color:var(--muted);font-size:13px;margin-top:6px}
 
-  background-size:200% 100%;
-  animation: underlineMove 3s linear infinite,
-             underlineGlow 2.4s ease-in-out infinite;
-}
+  .nav{
+    display:flex; gap:10px; align-items:center;
+  }
+  .navBtn{
+    padding:10px 12px;
+    border-radius:14px;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.14);
+    color:#fff;
+    font-weight:900;
+    letter-spacing:.6px;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:.14s ease;
+  }
+  .navBtn:hover{
+    transform:translateY(-1px);
+    background:rgba(255,255,255,.08);
+    border-color:rgba(255,255,255,.18);
+  }
 
-@keyframes underlineMove{
-  0%{ background-position:0% 0%; }
-  100%{ background-position:200% 0%; }
-}
+  .panel{
+    margin-top:16px;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:14px;
+    position:relative;
+    overflow:hidden;
+  }
+  .panel::before{
+    content:"";
+    position:absolute; inset:-60% -20%;
+    transform:rotate(-12deg);
+    background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.05), rgba(255,255,255,0));
+    opacity:.22;
+    pointer-events:none;
+  }
 
-@keyframes underlineGlow{
-  0%{ box-shadow:0 0 4px rgba(123,46,255,.25); }
-  50%{ box-shadow:0 0 16px rgba(123,46,255,.55); }
-  100%{ box-shadow:0 0 4px rgba(123,46,255,.25); }
-}
+  .grid{
+    margin-top:10px;
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:10px;
+    position:relative;
+    z-index:2;
+  }
 
-/* ================= CONTROLS ================= */
-.controls{ margin:14px 0; display:flex; gap:10px; }
-button{
-  border:1px solid rgba(255,255,255,.14);
-  background:rgba(255,255,255,.04);
-  color:#fff;
-  padding:8px 12px;
-  border-radius:12px;
-  cursor:pointer;
-  transition:.15s ease;
-}
-button:hover{ background:rgba(255,255,255,.08); transform:translateY(-1px); }
+  .dow{
+    color:rgba(255,255,255,.55);
+    font-size:11px;
+    font-weight:900;
+    letter-spacing:.9px;
+    text-transform:uppercase;
+    padding:6px 4px;
+  }
 
-.monthLine{ color:#bbb; margin-bottom:10px; }
+  .day{
+    min-height:92px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(255,255,255,.03);
+    padding:10px;
+    cursor:pointer;
+    transition:.16s ease;
+    position:relative;
+    overflow:hidden;
+  }
 
-/* ================= GRID ================= */
-.grid{
-  display:grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap:10px;
-}
+  /* ✅ animated hover line + date animation */
+  .day::after{
+    content:"";
+    position:absolute;
+    left:10px;
+    right:10px;
+    bottom:10px;
+    height:4px;
+    border-radius:999px;
+    background:linear-gradient(90deg, var(--accent), transparent);
+    transform:scaleX(0);
+    transform-origin:left;
+    transition:.18s ease;
+    opacity:.95;
+  }
 
-.cell{
-  background:rgba(17,17,17,.85);
-  border:1px solid rgba(255,255,255,.10);
-  border-radius:14px;
-  min-height:110px;
-  padding:10px;
-  position:relative;
-  overflow:hidden;
-  transition: all .18s ease;
-}
+  .day:hover{
+    transform:translateY(-2px);
+    border-color:rgba(255,255,255,.16);
+    background:rgba(255,255,255,.06);
+    box-shadow:0 0 0 1px rgba(255,255,255,.04), 0 0 26px var(--clubGlow);
+  }
 
-/* subtle diagonal */
-.cell::before{
-  content:"";
-  position:absolute;
-  inset:-60% -20%;
-  transform:rotate(-12deg);
-  background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.04), rgba(255,255,255,0));
-  opacity:.18;
-}
+  .day:hover::after{ transform:scaleX(1); }
 
-/* 🔥 Hover animation on date */
-.cell:hover{
-  transform:translateY(-2px);
-  background:#1a1a1a;
-  border-color:rgba(255,255,255,.18);
-  box-shadow:0 0 22px rgba(123,46,255,.18);
-}
+  .day.muted{
+    opacity:.35;
+    cursor:default;
+  }
+  .day.muted:hover{
+    transform:none;
+    box-shadow:none;
+  }
+  .day.muted:hover::after{ transform:scaleX(0); }
 
-.dateNum{
-  font-weight:bold;
-  font-size:13px;
-  margin-bottom:6px;
-}
+  .num{
+    font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;
+    font-size:18px;
+    letter-spacing:.6px;
+    opacity:.95;
+    transition:.16s ease;
+  }
+  .day:hover .num{ transform:scale(1.06); }
 
-/* event block */
-.event{
-  font-size:12px;
-  padding:5px 7px;
-  border-radius:8px;
-  background:rgba(255,255,255,.05);
-  margin-top:4px;
-}
-.event.game{
-  background:rgba(123,46,255,.18);
-}
+  .dots{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+  .dot{
+    height:8px;
+    padding:0 10px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.14);
+    background:rgba(255,255,255,.04);
+    color:rgba(255,255,255,.86);
+    font-size:10px;
+    font-weight:900;
+    letter-spacing:.7px;
+    text-transform:uppercase;
+    display:flex;
+    align-items:center;
+  }
+  .dot.game{
+    border-color:color-mix(in srgb, var(--accent) 55%, transparent);
+    background:color-mix(in srgb, var(--accent) 16%, transparent);
+  }
+
+  .status{
+    margin-top:10px;
+    color:rgba(255,255,255,.72);
+    font-size:13px;
+  }
+  .err{
+    margin-top:14px;
+    color:#fff;
+    background:rgba(255,0,0,.12);
+    border:1px solid rgba(255,0,0,.35);
+    padding:12px;
+    border-radius:14px;
+  }
+
+  /* event list popup */
+  .sheet{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    background:rgba(0,0,0,.92);
+    border-top:1px solid rgba(255,255,255,.12);
+    padding:16px;
+    transform:translateY(110%);
+    transition:.18s ease;
+    z-index:9999;
+  }
+  .sheet.open{ transform:translateY(0); }
+  .sheetInner{max-width:980px;margin:0 auto}
+  .sheetTitle{
+    font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;
+    font-size:28px;
+    letter-spacing:.8px;
+    text-transform:uppercase;
+  }
+  .sheetSub{color:var(--muted);font-size:13px;margin-top:6px}
+  .sheetList{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+  .sheetItem{
+    background:rgba(17,17,17,.85);
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:16px;
+    padding:12px;
+    cursor:pointer;
+    transition:.14s ease;
+    position:relative;
+    overflow:hidden;
+  }
+  .sheetItem:hover{
+    transform:translateY(-1px);
+    background:rgba(26,26,26,.9);
+    border-color:rgba(255,255,255,.16);
+    box-shadow:0 0 28px var(--clubGlow);
+  }
+  .sheetItemTitle{
+    font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;
+    font-size:22px;
+    letter-spacing:.6px;
+    text-transform:uppercase;
+    position:relative;
+    padding-bottom:6px;
+  }
+  .sheetItemTitle::after{
+    content:"";
+    position:absolute;
+    left:0; bottom:0;
+    height:4px;
+    width:100%;
+    border-radius:999px;
+    background:linear-gradient(90deg, var(--accent), transparent);
+    transform:scaleX(0);
+    transform-origin:left;
+    transition:.18s ease;
+  }
+  .sheetItem:hover .sheetItemTitle::after{ transform:scaleX(1); }
+  .sheetItemMeta{margin-top:8px;color:rgba(255,255,255,.72);font-size:13px;line-height:1.45}
+  .closeRow{display:flex;justify-content:flex-end}
+  .closeBtn{
+    margin-top:10px;
+    padding:10px 14px;
+    border-radius:14px;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.14);
+    color:#fff;
+    font-weight:900;
+    letter-spacing:.6px;
+    text-transform:uppercase;
+    cursor:pointer;
+  }
 </style>
 </head>
-
 <body>
-<div class="stage">
-<div class="wrap">
+  <div class="stage">
+    <div class="wrap">
+      <div class="titleRow">
+        <div>
+          <div class="title">Calendar</div>
+          <div class="sub" id="subtitle">Waiting for schedule data…</div>
+        </div>
+        <div class="nav">
+          <button class="navBtn" id="prevBtn">Prev</button>
+          <button class="navBtn" id="todayBtn">Today</button>
+          <button class="navBtn" id="nextBtn">Next</button>
+        </div>
+      </div>
 
-<div class="title">Calendar</div>
+      <div class="panel">
+        <div class="grid" id="dow"></div>
+        <div class="grid" id="grid"></div>
+        <div class="status" id="status">—</div>
+        <div id="error"></div>
+      </div>
+    </div>
+  </div>
 
-<div class="controls">
-<button onclick="prev()">Prev</button>
-<button onclick="next()">Next</button>
-<button onclick="today()">Today</button>
-</div>
-
-<div class="monthLine" id="monthLine"></div>
-
-<div class="grid" id="grid"></div>
-
-</div>
-</div>
+  <!-- bottom sheet for day events -->
+  <div class="sheet" id="sheet">
+    <div class="sheetInner">
+      <div class="sheetTitle" id="sheetTitle">Day</div>
+      <div class="sheetSub" id="sheetSub">—</div>
+      <div class="sheetList" id="sheetList"></div>
+      <div class="closeRow">
+        <button class="closeBtn" id="closeSheet">Close</button>
+      </div>
+    </div>
+  </div>
 
 <script>
-const EVENTS = {
-  "2026-03-01":[{title:"Game vs Colts", game:true}],
-  "2026-03-03":[{title:"Training"}],
-  "2026-03-06":[{title:"Training"}],
-};
+  // ---------- THEMES (clubSlug -> colors) ----------
+  const CLUB_THEMES = {
+    default:    { accent:"#7B2EFF", accent2:"#B266FF", glow:"rgba(123,46,255,.18)" },
+    cherrybrook:{ accent:"#C8102E", accent2:"#FF4B5C", glow:"rgba(200,16,46,.20)" },
+    rumson:     { accent:"#FFFFFF", accent2:"#BDBDBD", glow:"rgba(255,255,255,.10)" },
+    monmouth:   { accent:"#00E5FF", accent2:"#00A3FF", glow:"rgba(0,229,255,.18)" }
+  };
 
-let cursor = new Date();
+  function applyClubTheme(clubSlug){
+    const slug = String(clubSlug || "default").trim().toLowerCase();
+    const t = CLUB_THEMES[slug] || CLUB_THEMES.default;
+    const r = document.documentElement.style;
+    r.setProperty("--accent", t.accent);
+    r.setProperty("--accent2", t.accent2);
+    r.setProperty("--clubGlow", t.glow);
+  }
 
-function render(){
-  const year = cursor.getFullYear();
-  const month = cursor.getMonth();
+  // ---------- DOM ----------
+  const $subtitle = document.getElementById("subtitle");
+  const $dow = document.getElementById("dow");
+  const $grid = document.getElementById("grid");
+  const $status = document.getElementById("status");
+  const $error = document.getElementById("error");
 
-  const first = new Date(year,month,1);
-  const last = new Date(year,month+1,0);
+  const $prev = document.getElementById("prevBtn");
+  const $today = document.getElementById("todayBtn");
+  const $next = document.getElementById("nextBtn");
 
-  document.getElementById("monthLine").innerText =
-    first.toLocaleString(undefined,{month:"long",year:"numeric"});
+  const $sheet = document.getElementById("sheet");
+  const $sheetTitle = document.getElementById("sheetTitle");
+  const $sheetSub = document.getElementById("sheetSub");
+  const $sheetList = document.getElementById("sheetList");
+  const $closeSheet = document.getElementById("closeSheet");
 
-  const start = first.getDay();
-  const days = last.getDate();
+  // ---------- STATE ----------
+  let allEvents = [];
+  let monthCursor = new Date();
 
-  let html = "";
-  for(let i=0;i<start;i++) html += `<div class="cell"></div>`;
+  const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
-  for(let d=1; d<=days; d++){
-    const dateStr = `${year}-${String(month+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-    const events = EVENTS[dateStr] || [];
+  function safe(s){ return String(s ?? "").replace(/[<>]/g,""); }
 
-    html += `<div class="cell"><div class="dateNum">${d}</div>`;
+  function startOfMonth(d){ return new Date(d.getFullYear(), d.getMonth(), 1); }
+  function endOfMonth(d){ return new Date(d.getFullYear(), d.getMonth()+1, 0); }
+  function sameDay(a,b){
+    return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+  }
 
-    events.forEach(e=>{
-      html += `<div class="event ${e.game?'game':''}">${e.title}</div>`;
+  function fmtMonth(d){
+    return new Intl.DateTimeFormat(undefined,{month:"long",year:"numeric"}).format(d);
+  }
+  function fmtDateLong(d){
+    return new Intl.DateTimeFormat(undefined,{weekday:"long",month:"short",day:"numeric"}).format(d);
+  }
+  function fmtTime(dt){
+    return new Intl.DateTimeFormat(undefined,{hour:"numeric",minute:"2-digit"}).format(dt);
+  }
+
+  function normalizeEvent(e){
+    const dt = e?.dateTime ? new Date(e.dateTime) : null;
+    const type = String(e?.eventType || "event").trim();
+    const typeLower = type.toLowerCase();
+    const isGame = typeLower === "game" || typeLower === "match";
+    const title = isGame
+      ? (e?.opponent ? `Game vs ${e.opponent}` : "Game")
+      : (type || "Session");
+
+    return {
+      _id: e._id,
+      dateTime: dt,
+      eventType: type,
+      isGame,
+      title,
+      location: e.location || "",
+      attendanceExpected: e.attendanceExpected || "",
+      opponent: e.opponent || ""
+    };
+  }
+
+  function getEventsForDay(day){
+    const list = allEvents
+      .filter(e => e.dateTime && sameDay(e.dateTime, day))
+      .sort((a,b)=>a.dateTime - b.dateTime);
+    return list;
+  }
+
+  function renderDOW(){
+    $dow.innerHTML = "";
+    DOW.forEach(name=>{
+      const el = document.createElement("div");
+      el.className = "dow";
+      el.textContent = name;
+      $dow.appendChild(el);
     });
-
-    html += `</div>`;
   }
 
-  document.getElementById("grid").innerHTML = html;
-}
+  function renderMonth(){
+    renderDOW();
+    $grid.innerHTML = "";
+    $error.innerHTML = "";
 
-function prev(){ cursor.setMonth(cursor.getMonth()-1); render(); }
-function next(){ cursor.setMonth(cursor.getMonth()+1); render(); }
-function today(){ cursor=new Date(); render(); }
+    const first = startOfMonth(monthCursor);
+    const last = endOfMonth(monthCursor);
+    const firstDow = first.getDay();
 
-render();
-  const statusEl = document.getElementById("status"); // optional if you have a status element
+    // month label in subtitle
+    $subtitle.textContent = `${fmtMonth(monthCursor)} • Click a date to view events`;
 
-window.addEventListener("message", (ev) => {
-  const data = ev.data;
-  if (!data) return;
+    // Build cells (6 weeks max view)
+    const start = new Date(first);
+    start.setDate(first.getDate() - firstDow);
 
-  if (data.type === "SCHEDULE_ERROR") {
-    console.log("Calendar error:", data.message);
-    if (statusEl) statusEl.textContent = data.message;
-    return;
+    const today = new Date();
+    let totalShown = 0;
+
+    for (let i=0;i<42;i++){
+      const day = new Date(start);
+      day.setDate(start.getDate() + i);
+
+      const inMonth = day.getMonth() === monthCursor.getMonth();
+      const dayEvents = getEventsForDay(day);
+
+      const cell = document.createElement("div");
+      cell.className = "day" + (inMonth ? "" : " muted");
+
+      // day number
+      const num = document.createElement("div");
+      num.className = "num";
+      num.textContent = day.getDate();
+      cell.appendChild(num);
+
+      // dots/pills for events
+      const dots = document.createElement("div");
+      dots.className = "dots";
+      dayEvents.slice(0,3).forEach(ev=>{
+        const dot = document.createElement("div");
+        dot.className = "dot" + (ev.isGame ? " game" : "");
+        dot.textContent = ev.isGame ? "Game" : "Session";
+        dots.appendChild(dot);
+      });
+      cell.appendChild(dots);
+
+      // click opens sheet only if in month (you can allow out-of-month too, but this is cleaner)
+      cell.addEventListener("click", () => {
+        if (!inMonth) return;
+        openDaySheet(day, dayEvents);
+      });
+
+      // small badge for today
+      if (sameDay(day, today) && inMonth){
+        cell.style.borderColor = "rgba(255,255,255,.18)";
+      }
+
+      $grid.appendChild(cell);
+      totalShown += dayEvents.length;
+    }
+
+    $status.textContent = `Loaded ${allEvents.length} event(s). This month shows ${totalShown} event(s).`;
   }
 
-  if (data.type !== "SCHEDULE_INIT") return;
+  function openDaySheet(day, dayEvents){
+    $sheetTitle.textContent = fmtDateLong(day);
+    $sheetSub.textContent = dayEvents.length ? `${dayEvents.length} event(s)` : "No events";
 
-  console.log("✅ Calendar received events:", data.events?.length || 0);
+    $sheetList.innerHTML = "";
 
-  // IMPORTANT: use the events coming from Wix CMS
-  applyClubTheme(data.clubSlug);
-  renderCalendar(data.events || []);
-});
+    if (!dayEvents.length){
+      const empty = document.createElement("div");
+      empty.className = "sheetItem";
+      empty.style.cursor = "default";
+      empty.innerHTML = `<div class="sheetItemTitle">No Events</div><div class="sheetItemMeta">Enjoy the recovery.</div>`;
+      $sheetList.appendChild(empty);
+    } else {
+      dayEvents.forEach(ev=>{
+        const item = document.createElement("div");
+        item.className = "sheetItem";
+        item.addEventListener("click", () => {
+          // tell Wix to open event page
+          window.parent.postMessage({ type:"OPEN_EVENT", eventId: ev._id }, "*");
+        });
+
+        item.innerHTML = `
+          <div class="sheetItemTitle">${safe(ev.title)}</div>
+          <div class="sheetItemMeta">
+            <strong>${safe(fmtTime(ev.dateTime))}</strong><br>
+            ${safe(ev.location || "")}
+            ${ev.attendanceExpected ? `<br>Expected: ${safe(ev.attendanceExpected)}` : ""}
+          </div>
+        `;
+        $sheetList.appendChild(item);
+      });
+    }
+
+    $sheet.classList.add("open");
+  }
+
+  $closeSheet.addEventListener("click", ()=> $sheet.classList.remove("open"));
+  $sheet.addEventListener("click", (e)=> { if (e.target === $sheet) $sheet.classList.remove("open"); });
+
+  $prev.addEventListener("click", ()=>{
+    monthCursor = new Date(monthCursor.getFullYear(), monthCursor.getMonth()-1, 1);
+    renderMonth();
+  });
+  $next.addEventListener("click", ()=>{
+    monthCursor = new Date(monthCursor.getFullYear(), monthCursor.getMonth()+1, 1);
+    renderMonth();
+  });
+  $today.addEventListener("click", ()=>{
+    monthCursor = new Date();
+    monthCursor = new Date(monthCursor.getFullYear(), monthCursor.getMonth(), 1);
+    renderMonth();
+  });
+
+  // ---------- IMPORTANT: receive real data from Wix ----------
+  window.addEventListener("message", (ev) => {
+    const data = ev.data;
+    if (!data) return;
+
+    if (data.type === "SCHEDULE_ERROR"){
+      $error.innerHTML = `<div class="err">${safe(data.message)}</div>`;
+      $status.textContent = "Error loading schedule.";
+      return;
+    }
+
+    if (data.type !== "SCHEDULE_INIT") return;
+    if (data.view !== "calendar") return;
+
+    // ✅ apply club theme
+    applyClubTheme(data.clubSlug);
+
+    // ✅ replace any default data with Wix CMS events
+    allEvents = (data.events || []).map(normalizeEvent).filter(e => e._id && e.dateTime);
+
+    // show current month by default
+    monthCursor = new Date();
+    monthCursor = new Date(monthCursor.getFullYear(), monthCursor.getMonth(), 1);
+
+    // render
+    renderMonth();
+  });
+
+  // Optional: tell parent iframe we’re ready (if you want)
+  try { window.parent.postMessage({ type:"IFRAME_READY" }, "*"); } catch(_) {}
 </script>
-
 </body>
 </html>
