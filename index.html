@@ -72,6 +72,7 @@ body{margin:0;background:transparent;color:var(--text);font-family:Arial,sans-se
 .err{margin-top:16px;color:#fff;background:rgba(255,0,0,.12);border:1px solid rgba(255,0,0,.35);padding:12px;border-radius:14px}
 </style>
 </head>
+
 <body>
 <div class="stage"><div class="wrap">
   <div class="teamName" id="teamName">Schedule</div>
@@ -88,21 +89,31 @@ body{margin:0;background:transparent;color:var(--text);font-family:Arial,sans-se
 </div></div>
 
 <script>
+// ✅ Keep your fallback mapping (optional)
 const CLUB_THEMES = {
   default: { accent:"#7B2EFF", accent2:"#B266FF", bgGlow:"rgba(123,46,255,.18)" },
   cherrybrook: { accent:"#C8102E", accent2:"#FF4B5C", bgGlow:"rgba(200,16,46,.20)" },
   rumson: { accent:"#FFFFFF", accent2:"#BDBDBD", bgGlow:"rgba(255,255,255,.10)" },
   monmouth: { accent:"#00E5FF", accent2:"#00A3FF", bgGlow:"rgba(0,229,255,.18)" }
 };
-function applyClubTheme(clubSlug){
-  const slug = String(clubSlug||"default").trim().toLowerCase();
-  const t = CLUB_THEMES[slug] || CLUB_THEMES.default;
+
+// ✅ NEW: prefer payload.theme from Wix, fallback to CLUB_THEMES
+function applyThemeFromPayload(payload){
+  const slug = String(payload?.clubSlug || "default").trim().toLowerCase();
+  const fallback = CLUB_THEMES[slug] || CLUB_THEMES.default;
+
+  const t = payload?.theme || null;
+
+  const accent  = (t?.accent  || fallback.accent);
+  const accent2 = (t?.accent2 || fallback.accent2 || accent);
+  const glow    = (t?.glow    || fallback.bgGlow || "rgba(123,46,255,.18)");
+
   const r = document.documentElement.style;
-  r.setProperty("--accent", t.accent);
-  r.setProperty("--accent2", t.accent2);
-  r.setProperty("--gameday", t.accent);
-  r.setProperty("--gameday2", t.accent2);
-  r.setProperty("--clubGlow", t.bgGlow);
+  r.setProperty("--accent", accent);
+  r.setProperty("--accent2", accent2);
+  r.setProperty("--gameday", accent);
+  r.setProperty("--gameday2", accent2);
+  r.setProperty("--clubGlow", glow);
 }
 
 const $teamName = document.getElementById("teamName");
@@ -164,12 +175,17 @@ window.addEventListener("message", (ev) => {
 
   if (data.type !== "SCHEDULE_INIT") return;
 
-  applyClubTheme(data.clubSlug);
+  // ✅ NEW: theme (from Wix) -> CSS variables
+  applyThemeFromPayload(data);
+
   $teamName.textContent = "Schedule";
   $sub.textContent = `Loaded ${data.events?.length || 0} event(s)`;
 
   renderList(data.events || []);
 });
+
+// Optional handshake (some pages use it)
+try { window.parent.postMessage({ type:"IFRAME_READY" }, "*"); } catch(_) {}
 </script>
 </body>
 </html>
