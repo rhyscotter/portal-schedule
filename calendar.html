@@ -329,7 +329,7 @@
   </div>
 
 <script>
-  // ---------- THEMES (clubSlug -> colors) ----------
+  // ---------- THEMES (fallback only) ----------
   const CLUB_THEMES = {
     default:    { accent:"#7B2EFF", accent2:"#B266FF", glow:"rgba(123,46,255,.18)" },
     cherrybrook:{ accent:"#C8102E", accent2:"#FF4B5C", glow:"rgba(200,16,46,.20)" },
@@ -337,13 +337,21 @@
     monmouth:   { accent:"#00E5FF", accent2:"#00A3FF", glow:"rgba(0,229,255,.18)" }
   };
 
-  function applyClubTheme(clubSlug){
-    const slug = String(clubSlug || "default").trim().toLowerCase();
-    const t = CLUB_THEMES[slug] || CLUB_THEMES.default;
+  // ✅ NEW: prefer payload.theme from Wix, fallback to CLUB_THEMES
+  function applyThemeFromPayload(payload){
+    const slug = String(payload?.clubSlug || "default").trim().toLowerCase();
+    const fb = CLUB_THEMES[slug] || CLUB_THEMES.default;
+
+    const t = payload?.theme || null;
+
+    const accent  = (t?.accent  || fb.accent);
+    const accent2 = (t?.accent2 || fb.accent2 || accent);
+    const glow    = (t?.glow    || fb.glow    || "rgba(123,46,255,.18)");
+
     const r = document.documentElement.style;
-    r.setProperty("--accent", t.accent);
-    r.setProperty("--accent2", t.accent2);
-    r.setProperty("--clubGlow", t.glow);
+    r.setProperty("--accent", accent);
+    r.setProperty("--accent2", accent2);
+    r.setProperty("--clubGlow", glow);
   }
 
   // ---------- DOM ----------
@@ -471,7 +479,7 @@
       });
       cell.appendChild(dots);
 
-      // click opens sheet only if in month (you can allow out-of-month too, but this is cleaner)
+      // click opens sheet only if in month
       cell.addEventListener("click", () => {
         if (!inMonth) return;
         openDaySheet(day, dayEvents);
@@ -506,7 +514,6 @@
         const item = document.createElement("div");
         item.className = "sheetItem";
         item.addEventListener("click", () => {
-          // tell Wix to open event page
           window.parent.postMessage({ type:"OPEN_EVENT", eventId: ev._id }, "*");
         });
 
@@ -542,7 +549,7 @@
     renderMonth();
   });
 
-  // ---------- IMPORTANT: receive real data from Wix ----------
+  // ---------- receive real data from Wix ----------
   window.addEventListener("message", (ev) => {
     const data = ev.data;
     if (!data) return;
@@ -556,21 +563,17 @@
     if (data.type !== "SCHEDULE_INIT") return;
     if (data.view !== "calendar") return;
 
-    // ✅ apply club theme
-    applyClubTheme(data.clubSlug);
+    // ✅ NEW: apply theme from Wix (or fallback)
+    applyThemeFromPayload(data);
 
-    // ✅ replace any default data with Wix CMS events
     allEvents = (data.events || []).map(normalizeEvent).filter(e => e._id && e.dateTime);
 
-    // show current month by default
     monthCursor = new Date();
     monthCursor = new Date(monthCursor.getFullYear(), monthCursor.getMonth(), 1);
 
-    // render
     renderMonth();
   });
 
-  // Optional: tell parent iframe we’re ready (if you want)
   try { window.parent.postMessage({ type:"IFRAME_READY" }, "*"); } catch(_) {}
 </script>
 </body>
