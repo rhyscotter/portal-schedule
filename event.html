@@ -5,195 +5,434 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Event</title>
 <style>
-:root{
-  --bg:#000; --card:#111; --border:#1e1e1e; --text:#fff; --muted:#8a8a8a;
-  --accent:#7B2EFF; --accent2:#B266FF;
-  --gameday:var(--accent); --gameday2:var(--accent2);
-}
-*{box-sizing:border-box}
-body{margin:0;background:transparent;color:var(--text);font-family:Arial,sans-serif}
-.stage{
-  min-height:100vh;padding:22px;
-  background:radial-gradient(1000px 600px at 20% -10%, rgba(255,255,255,.05), transparent 60%),
-            linear-gradient(180deg,#000 0%,#050505 100%);
-  position:relative;overflow:hidden;
-}
-.stage::before{content:"";position:absolute;inset:-40% -20%;transform:rotate(-14deg);
-  background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.05), rgba(255,255,255,0));
-  opacity:.18;pointer-events:none;}
-.wrap{max-width:900px;margin:0 auto;position:relative;z-index:2}
-.title{font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;font-size:52px;text-transform:uppercase;letter-spacing:1px;line-height:1;position:relative;padding-bottom:10px;display:inline-block}
-.title::after{content:"";position:absolute;left:0;bottom:0;height:6px;width:100%;border-radius:999px;background:linear-gradient(90deg,var(--gameday),transparent)}
-.meta{margin-top:10px;color:rgba(255,255,255,.72);font-size:13px;line-height:1.45}
-.gameday{
-  margin-top:14px;padding:14px;border-radius:18px;
-  background:linear-gradient(90deg,var(--gameday),var(--gameday2));
-  position:relative;overflow:hidden;display:none;
-}
-.gameday.on{display:block}
-.gameday::before{content:"";position:absolute;inset:0;
-  background:linear-gradient(120deg, rgba(255,255,255,0), rgba(255,255,255,.35), rgba(255,255,255,0));
-  transform:translateX(-70%);animation:sweep 2.8s linear infinite;opacity:.9;pointer-events:none;}
-@keyframes sweep{0%{transform:translateX(-70%)}100%{transform:translateX(70%)}}
-.gTitle{font-family:Impact,sans-serif;text-transform:uppercase;letter-spacing:1px;font-size:18px;position:relative;z-index:2}
-.gSub{margin-top:4px;color:rgba(255,255,255,.88);font-size:13px;position:relative;z-index:2}
-.energyBar{height:3px;border-radius:999px;margin-top:10px;background:linear-gradient(90deg,var(--gameday),var(--gameday2));
-  animation:energyPulse 1.8s ease-in-out infinite;position:relative;z-index:2}
-@keyframes energyPulse{0%{opacity:.6;transform:scaleX(.98)}50%{opacity:1;transform:scaleX(1)}100%{opacity:.6;transform:scaleX(.98)}}
-.box{margin-top:14px;background:rgba(17,17,17,.85);border:1px solid rgba(255,255,255,.10);border-radius:16px;padding:14px;position:relative;overflow:hidden}
-.label{font-family:Impact,sans-serif;text-transform:uppercase;letter-spacing:.9px;font-size:16px;color:rgba(255,255,255,.78)}
-.val{margin-top:8px;font-size:14px;color:rgba(255,255,255,.92);line-height:1.45}
-.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
-button{flex:1;min-width:120px;padding:12px;border-radius:16px;border:1px solid rgba(255,255,255,.18);
-  background:rgba(255,255,255,.04);color:#fff;font-weight:900;letter-spacing:.6px;text-transform:uppercase;
-  cursor:pointer;transition:.14s ease}
-button:hover{transform:translateY(-1px);background:rgba(255,255,255,.09)}
-button.active{border-color:color-mix(in srgb, var(--gameday) 65%, transparent);background:color-mix(in srgb, var(--gameday) 18%, transparent)}
-.err{margin-top:16px;color:#fff;background:rgba(255,0,0,.12);border:1px solid rgba(255,0,0,.35);padding:12px;border-radius:14px}
+  :root{
+    --panel:rgba(17,17,17,.88);
+    --border:rgba(255,255,255,.10);
+    --text:#fff;
+    --muted:rgba(255,255,255,.62);
+    --accent:#7B2EFF;
+    --accent2:#B266FF;
+    --clubGlow: rgba(123,46,255,.18);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:transparent;color:var(--text);font-family:Arial,sans-serif}
+  .stage{
+    min-height:100vh;padding:22px;
+    background:
+      radial-gradient(1000px 600px at 20% -10%, rgba(255,255,255,.05), transparent 60%),
+      linear-gradient(180deg,#000 0%,#050505 100%);
+    position:relative;overflow:hidden;
+  }
+  .stage::before{
+    content:"";position:absolute; inset:-40% -20%;
+    transform:rotate(-14deg);
+    background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.05), rgba(255,255,255,0));
+    opacity:.18;pointer-events:none;
+  }
+  .wrap{max-width:980px;margin:0 auto;position:relative;z-index:2}
+  .title{
+    font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;
+    font-size:52px;text-transform:uppercase;letter-spacing:1px;line-height:1;
+    position:relative;padding-bottom:10px;
+  }
+  .title::after{
+    content:"";position:absolute;left:0;bottom:0;height:6px;width:100%;
+    border-radius:999px;
+    background:linear-gradient(90deg, var(--accent), transparent);
+    animation:underlineSweep 1.8s linear infinite;
+  }
+  @keyframes underlineSweep{
+    0%{filter:brightness(1); transform:translateX(-2px)}
+    50%{filter:brightness(1.12); transform:translateX(2px)}
+    100%{filter:brightness(1); transform:translateX(-2px)}
+  }
+  .sub{color:var(--muted);font-size:13px;margin-top:6px;max-width:650px}
+  .pillRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .pill{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:10px 12px;border-radius:999px;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.14);
+    color:#fff;font-weight:900;letter-spacing:.6px;text-transform:uppercase;
+  }
+  .pill strong{font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;font-size:18px;letter-spacing:.8px}
+  .glow{box-shadow:0 0 0 1px rgba(255,255,255,.04), 0 0 32px var(--clubGlow);}
+  .grid{margin-top:16px;display:grid;grid-template-columns:1.2fr .8fr;gap:14px}
+  @media (max-width: 860px){.grid{grid-template-columns:1fr}}
+  .panel{
+    background:rgba(17,17,17,.88);
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:18px;padding:14px;position:relative;overflow:hidden;
+  }
+  .panel::before{
+    content:"";position:absolute; inset:-60% -20%;
+    transform:rotate(-12deg);
+    background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.05), rgba(255,255,255,0));
+    opacity:.22;pointer-events:none;
+  }
+  .panelInner{position:relative;z-index:2}
+  .h2{
+    font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;
+    font-size:26px;text-transform:uppercase;letter-spacing:.8px;margin:0;padding-bottom:8px;
+    position:relative;
+  }
+  .h2::after{
+    content:"";position:absolute;left:0;bottom:0;height:4px;width:100%;
+    border-radius:999px;background:linear-gradient(90deg, var(--accent), transparent);
+    transform:scaleX(.35);transform-origin:left;transition:.18s ease;opacity:.95;
+  }
+  .panel:hover .h2::after{transform:scaleX(1)}
+  .meta{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media (max-width: 520px){.meta{grid-template-columns:1fr}}
+  .box{
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(255,255,255,.03);
+    border-radius:16px;padding:12px;transition:.16s ease;
+  }
+  .box:hover{
+    border-color:rgba(255,255,255,.16);
+    background:rgba(255,255,255,.06);
+    box-shadow:0 0 26px var(--clubGlow);
+    transform:translateY(-1px);
+  }
+  .label{color:rgba(255,255,255,.62);font-size:11px;font-weight:900;letter-spacing:.9px;text-transform:uppercase}
+  .val{margin-top:6px;font-size:14px;line-height:1.45;color:rgba(255,255,255,.92);word-break:break-word}
+  .countdown{margin-top:10px;display:flex;gap:10px;flex-wrap:wrap}
+  .cdCard{
+    min-width:120px;border-radius:16px;padding:12px;
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(255,255,255,.03);
+    box-shadow:0 0 0 1px rgba(255,255,255,.03), 0 0 32px var(--clubGlow);
+  }
+  .cdNum{font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;font-size:34px;letter-spacing:1px;line-height:1}
+  .cdLbl{margin-top:6px;color:rgba(255,255,255,.62);font-weight:900;letter-spacing:.9px;text-transform:uppercase;font-size:11px}
+  .rsvpRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .rsvpBtn{
+    padding:12px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.14);
+    background:rgba(255,255,255,.04);color:#fff;font-weight:900;letter-spacing:.7px;text-transform:uppercase;
+    cursor:pointer;transition:.14s ease;position:relative;overflow:hidden;
+  }
+  .rsvpBtn::after{
+    content:"";position:absolute;left:12px;right:12px;bottom:10px;height:4px;border-radius:999px;
+    background:linear-gradient(90deg, var(--accent), transparent);
+    transform:scaleX(0);transform-origin:left;transition:.18s ease;opacity:.95;
+  }
+  .rsvpBtn:hover{
+    transform:translateY(-1px);background:rgba(255,255,255,.08);
+    border-color:rgba(255,255,255,.18);box-shadow:0 0 28px var(--clubGlow);
+  }
+  .rsvpBtn:hover::after{transform:scaleX(1)}
+  .rsvpBtn.active{
+    border-color: color-mix(in srgb, var(--accent) 70%, rgba(255,255,255,.18));
+    background: color-mix(in srgb, var(--accent) 18%, rgba(255,255,255,.05));
+    box-shadow:0 0 34px var(--clubGlow);
+  }
+  .tiny{color:rgba(255,255,255,.62);font-size:12px;margin-top:10px}
+  .lists{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px}
+  .listHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px}
+  .tag{
+    padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.14);
+    background:rgba(255,255,255,.04);
+    color:rgba(255,255,255,.92);
+    font-weight:900;letter-spacing:.8px;text-transform:uppercase;font-size:11px;
+  }
+  .list{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+  .person{
+    display:flex;align-items:center;gap:10px;
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(255,255,255,.03);
+    border-radius:14px;padding:8px 10px;transition:.14s ease;
+  }
+  .person:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.16);transform:translateY(-1px)}
+  .avatar{
+    width:34px;height:34px;border-radius:50%;
+    overflow:hidden;border:1px solid rgba(255,255,255,.18);
+    background:rgba(255,255,255,.06);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:900;font-size:13px;color:#fff;flex-shrink:0;
+  }
+  .avatar img{width:100%;height:100%;object-fit:cover}
+  .personName{font-weight:900;letter-spacing:.2px}
+  .personRole{margin-top:2px;color:rgba(255,255,255,.62);font-size:11px;text-transform:uppercase;letter-spacing:.8px;font-weight:900}
+  .err{margin-top:14px;color:#fff;background:rgba(255,0,0,.12);border:1px solid rgba(255,0,0,.35);padding:12px;border-radius:14px}
 </style>
 </head>
+
 <body>
-<div class="stage"><div class="wrap">
-  <div class="title" id="title">Event</div>
-  <div class="meta" id="meta">Waiting for data…</div>
+  <div class="stage">
+    <div class="wrap">
+      <div class="title">Event</div>
+      <div class="sub" id="subtitle">Waiting for event data…</div>
 
-  <div class="gameday" id="gameday">
-    <div class="gTitle">Game Day Mode</div>
-    <div class="gSub" id="countdown">—</div>
-    <div class="energyBar"></div>
-  </div>
+      <div class="pillRow">
+        <div class="pill glow"><strong id="eventTitle">—</strong></div>
+        <div class="pill"><span>Yes Count:</span> <strong id="yesCount">0</strong></div>
+      </div>
 
-  <div class="box">
-    <div class="label">Location</div>
-    <div class="val" id="loc">—</div>
-  </div>
+      <div class="grid">
+        <div class="panel">
+          <div class="panelInner">
+            <div class="h2">Details</div>
 
-  <div class="box">
-    <div class="label">Attendance Expected</div>
-    <div class="val" id="att">—</div>
-  </div>
+            <div class="meta">
+              <div class="box"><div class="label">Date</div><div class="val" id="dateLine">—</div></div>
+              <div class="box"><div class="label">Time</div><div class="val" id="timeLine">—</div></div>
+              <div class="box"><div class="label">Location</div><div class="val" id="locationLine">—</div></div>
+              <div class="box"><div class="label">Address / Notes</div><div class="val" id="notesLine">—</div></div>
+            </div>
 
-  <div class="box">
-    <div class="label">RSVP</div>
-    <div class="btns">
-      <button id="yes">YES</button>
-      <button id="maybe">MAYBE</button>
-      <button id="no">NO</button>
+            <div class="countdown" id="countdownRow" style="margin-top:14px"></div>
+
+            <div class="h2" style="margin-top:18px">Availability</div>
+            <div class="rsvpRow" id="rsvpRow">
+              <button class="rsvpBtn" id="btnYes">Yes</button>
+              <button class="rsvpBtn" id="btnMaybe">Maybe</button>
+              <button class="rsvpBtn" id="btnNo">No</button>
+            </div>
+            <div class="tiny" id="saveStatus">Choose your availability.</div>
+
+            <div id="error"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panelInner">
+            <div class="h2">Who’s Coming</div>
+
+            <div class="lists">
+              <div>
+                <div class="listHead"><div class="tag">YES</div><div class="tag" id="yesTagCount">0</div></div>
+                <div class="list" id="yesList"></div>
+              </div>
+              <div>
+                <div class="listHead"><div class="tag">MAYBE</div><div class="tag" id="maybeTagCount">0</div></div>
+                <div class="list" id="maybeList"></div>
+              </div>
+              <div>
+                <div class="listHead"><div class="tag">NO</div><div class="tag" id="noTagCount">0</div></div>
+                <div class="list" id="noList"></div>
+              </div>
+            </div>
+
+            <div class="tiny">Players only (this team only).</div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="val" id="rsvpLine">Not responded yet.</div>
   </div>
-
-  <div id="err"></div>
-</div></div>
 
 <script>
-const CLUB_THEMES = {
-  default: { accent:"#7B2EFF", accent2:"#B266FF" },
-  cherrybrook: { accent:"#C8102E", accent2:"#FF4B5C" },
-  rumson: { accent:"#FFFFFF", accent2:"#BDBDBD" },
-  monmouth: { accent:"#00E5FF", accent2:"#00A3FF" }
-};
-function applyClubTheme(clubSlug){
-  const slug = String(clubSlug||"default").trim().toLowerCase();
-  const t = CLUB_THEMES[slug] || CLUB_THEMES.default;
-  const r = document.documentElement.style;
-  r.setProperty("--accent", t.accent);
-  r.setProperty("--accent2", t.accent2);
-  r.setProperty("--gameday", t.accent);
-  r.setProperty("--gameday2", t.accent2);
-}
-
-const $title = document.getElementById("title");
-const $meta = document.getElementById("meta");
-const $loc = document.getElementById("loc");
-const $att = document.getElementById("att");
-const $gd = document.getElementById("gameday");
-const $countdown = document.getElementById("countdown");
-const $err = document.getElementById("err");
-const $rsvpLine = document.getElementById("rsvpLine");
-
-const btnYes = document.getElementById("yes");
-const btnMaybe = document.getElementById("maybe");
-const btnNo = document.getElementById("no");
-
-function safe(s){ return String(s??"").replace(/[<>]/g,""); }
-function fmt(dt){
-  const d = new Date(dt);
-  return new Intl.DateTimeFormat(undefined,{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}).format(d);
-}
-
-let activeEvent = null;
-let timer = null;
-
-function setActive(status){
-  [btnYes, btnMaybe, btnNo].forEach(b=>b.classList.remove("active"));
-  if (status==="Yes") btnYes.classList.add("active");
-  if (status==="Maybe") btnMaybe.classList.add("active");
-  if (status==="No") btnNo.classList.add("active");
-  $rsvpLine.textContent = status ? `Your RSVP: ${status}` : "Not responded yet.";
-}
-
-function fmtCountdown(ms){
-  if (ms <= 0) return "Kickoff is live.";
-  const s = Math.floor(ms/1000);
-  const days = Math.floor(s/86400);
-  const hrs = Math.floor((s%86400)/3600);
-  const mins = Math.floor((s%3600)/60);
-  const secs = s%60;
-  const dd = days ? `${days}d ` : "";
-  return `${dd}${String(hrs).padStart(2,"0")}:${String(mins).padStart(2,"0")}:${String(secs).padStart(2,"0")} to kickoff`;
-}
-
-function startCountdown(startDt){
-  if (timer) clearInterval(timer);
-  const kickoff = new Date(startDt).getTime();
-  const tick = () => $countdown.textContent = fmtCountdown(kickoff - Date.now());
-  tick();
-  timer = setInterval(tick, 1000);
-}
-
-btnYes.onclick = () => window.parent.postMessage({ type:"SAVE_RSVP", status:"Yes" }, "*");
-btnMaybe.onclick = () => window.parent.postMessage({ type:"SAVE_RSVP", status:"Maybe" }, "*");
-btnNo.onclick = () => window.parent.postMessage({ type:"SAVE_RSVP", status:"No" }, "*");
-
-window.addEventListener("message", (ev) => {
-  const data = ev.data;
-  if (!data) return;
-
-  if (data.type === "SCHEDULE_ERROR"){
-    $err.innerHTML = `<div class="err">${safe(data.message)}</div>`;
-    return;
+  const CLUB_THEMES = {
+    default:    { accent:"#7B2EFF", accent2:"#B266FF", glow:"rgba(123,46,255,.18)" },
+    cherrybrook:{ accent:"#C8102E", accent2:"#FF4B5C", glow:"rgba(200,16,46,.20)" },
+    rumson:     { accent:"#FFFFFF", accent2:"#BDBDBD", glow:"rgba(255,255,255,.10)" },
+    monmouth:   { accent:"#00E5FF", accent2:"#00A3FF", glow:"rgba(0,229,255,.18)" }
+  };
+  function applyClubTheme(clubSlug){
+    const slug = String(clubSlug || "default").trim().toLowerCase();
+    const t = CLUB_THEMES[slug] || CLUB_THEMES.default;
+    const r = document.documentElement.style;
+    r.setProperty("--accent", t.accent);
+    r.setProperty("--accent2", t.accent2);
+    r.setProperty("--clubGlow", t.glow);
   }
 
-  if (data.type === "RSVP_SAVED"){
-    setActive(data.status);
-    return;
+  const $subtitle = document.getElementById("subtitle");
+  const $eventTitle = document.getElementById("eventTitle");
+  const $yesCount = document.getElementById("yesCount");
+
+  const $dateLine = document.getElementById("dateLine");
+  const $timeLine = document.getElementById("timeLine");
+  const $locationLine = document.getElementById("locationLine");
+  const $notesLine = document.getElementById("notesLine");
+
+  const $countdownRow = document.getElementById("countdownRow");
+
+  const $rsvpRow = document.getElementById("rsvpRow");
+  const $btnYes = document.getElementById("btnYes");
+  const $btnMaybe = document.getElementById("btnMaybe");
+  const $btnNo = document.getElementById("btnNo");
+  const $saveStatus = document.getElementById("saveStatus");
+
+  const $yesList = document.getElementById("yesList");
+  const $maybeList = document.getElementById("maybeList");
+  const $noList = document.getElementById("noList");
+
+  const $yesTagCount = document.getElementById("yesTagCount");
+  const $maybeTagCount = document.getElementById("maybeTagCount");
+  const $noTagCount = document.getElementById("noTagCount");
+
+  const $error = document.getElementById("error");
+
+  let kickoff = null;
+  let countdownTimer = null;
+
+  function safe(s){ return String(s ?? "").replace(/[<>]/g,""); }
+  function setError(msg){ $error.innerHTML = msg ? `<div class="err">${safe(msg)}</div>` : ""; }
+
+  function initials(name){
+    const parts = String(name || "").trim().split(" ").filter(Boolean);
+    if (!parts.length) return "?";
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (parts[0].charAt(0) + parts[parts.length-1].charAt(0)).toUpperCase();
+  }
+  function fmtDate(dt){
+    return new Intl.DateTimeFormat(undefined,{weekday:"short",month:"short",day:"numeric"}).format(dt);
+  }
+  function fmtTime(dt){
+    return new Intl.DateTimeFormat(undefined,{hour:"numeric",minute:"2-digit"}).format(dt);
+  }
+  function setActive(status){
+    const s = String(status || "").toLowerCase().trim();
+    $btnYes.classList.toggle("active", s === "yes");
+    $btnMaybe.classList.toggle("active", s === "maybe");
+    $btnNo.classList.toggle("active", s === "no");
   }
 
-  if (data.type !== "SCHEDULE_INIT") return;
+  function renderPeople(el, arr){
+    const list = (arr || []);
+    el.innerHTML = "";
+    if (!list.length){
+      el.innerHTML = `<div class="person"><div class="personRole">—</div></div>`;
+      return;
+    }
+    list.forEach(p => {
+      const name = safe(p.name || "Player");
+      const role = safe(p.role || "Player");
+      const photo = p.photoUrl || "";
 
-  applyClubTheme(data.clubSlug);
+      const avatar = photo
+        ? `<div class="avatar"><img src="${photo}" /></div>`
+        : `<div class="avatar">${initials(name)}</div>`;
 
-  const e = data.event;
-  activeEvent = e;
-
-  const type = String(e.eventType||"").toLowerCase();
-  const title = type === "game" ? `Game${e.opponent ? " vs " + e.opponent : ""}` : (e.eventType || "Event");
-
-  $title.textContent = title;
-  $meta.innerHTML = `${safe(fmt(e.dateTime))}<br>${safe(e.location||"")}`;
-  $loc.textContent = e.location || "—";
-  $att.textContent = e.attendanceExpected || "—";
-
-  if (type === "game"){
-    $gd.classList.add("on");
-    startCountdown(e.dateTime);
-  } else {
-    $gd.classList.remove("on");
+      const div = document.createElement("div");
+      div.className = "person";
+      div.innerHTML = `
+        ${avatar}
+        <div>
+          <div class="personName">${name}</div>
+          <div class="personRole">${role}</div>
+        </div>
+      `;
+      el.appendChild(div);
+    });
   }
 
-  setActive(data.rsvpStatus || "");
-});
+  function applyRsvpLists(yesCount, lists){
+    $yesCount.textContent = String(Number(yesCount || 0));
+
+    const yesArr = lists?.yes || [];
+    const maybeArr = lists?.maybe || [];
+    const noArr = lists?.no || [];
+
+    $yesTagCount.textContent = String(yesArr.length);
+    $maybeTagCount.textContent = String(maybeArr.length);
+    $noTagCount.textContent = String(noArr.length);
+
+    renderPeople($yesList, yesArr);
+    renderPeople($maybeList, maybeArr);
+    renderPeople($noList, noArr);
+  }
+
+  function renderCountdown(){
+    if (!kickoff || isNaN(kickoff.getTime())){
+      $countdownRow.innerHTML = "";
+      return;
+    }
+    const now = new Date();
+    let diff = kickoff.getTime() - now.getTime();
+    if (diff <= 0){
+      $countdownRow.innerHTML = `
+        <div class="cdCard"><div class="cdNum">LIVE</div><div class="cdLbl">Kickoff</div></div>
+      `;
+      return;
+    }
+    const sec = Math.floor(diff/1000);
+    const days = Math.floor(sec / 86400);
+    const hrs = Math.floor((sec % 86400) / 3600);
+    const mins = Math.floor((sec % 3600) / 60);
+    $countdownRow.innerHTML = `
+      <div class="cdCard"><div class="cdNum">${days}</div><div class="cdLbl">Days</div></div>
+      <div class="cdCard"><div class="cdNum">${hrs}</div><div class="cdLbl">Hours</div></div>
+      <div class="cdCard"><div class="cdNum">${mins}</div><div class="cdLbl">Minutes</div></div>
+    `;
+  }
+  function startCountdown(dt){
+    kickoff = dt;
+    if (countdownTimer) clearInterval(countdownTimer);
+    renderCountdown();
+    countdownTimer = setInterval(renderCountdown, 1000 * 10);
+  }
+
+  function sendRsvp(status){
+    setError("");
+    $saveStatus.textContent = "Saving…";
+    window.parent.postMessage({ type:"SAVE_RSVP", status }, "*");
+  }
+  $btnYes.addEventListener("click", ()=> sendRsvp("Yes"));
+  $btnMaybe.addEventListener("click", ()=> sendRsvp("Maybe"));
+  $btnNo.addEventListener("click", ()=> sendRsvp("No"));
+
+  window.addEventListener("message", (ev) => {
+    const data = ev.data;
+    if (!data) return;
+
+    if (data.type === "SCHEDULE_ERROR"){
+      setError(data.message || "Error loading event.");
+      $subtitle.textContent = "Error loading event data.";
+      return;
+    }
+
+    if (data.type === "SCHEDULE_INIT" && data.view === "event"){
+      applyClubTheme(data.clubSlug);
+
+      const hasPlayer = !!data.playerId;
+      $rsvpRow.style.display = hasPlayer ? "" : "none";
+      $saveStatus.textContent = hasPlayer
+        ? "Choose your availability."
+        : "View only — select a player to RSVP.";
+
+      const e = data.event || {};
+      const dt = e.dateTime ? new Date(e.dateTime) : null;
+
+      const type = String(e.eventType || "").trim();
+      const typeLower = type.toLowerCase();
+      const isGame = typeLower === "game" || typeLower === "match";
+      const title = isGame
+        ? (e.opponent ? `Game vs ${e.opponent}` : "Game")
+        : (type || "Session");
+
+      $eventTitle.textContent = title || "Event";
+      $subtitle.textContent = `This Team • Player-based RSVP`;
+
+      $dateLine.textContent = dt ? fmtDate(dt) : "—";
+      $timeLine.textContent = dt ? fmtTime(dt) : "—";
+      $locationLine.textContent = safe(e.location || "—");
+
+      const notesParts = [];
+      if (e.address) notesParts.push(`Address: ${e.address}`);
+      if (e.arrivalTime) notesParts.push(`Arrive: ${e.arrivalTime}`);
+      if (e.notes) notesParts.push(`Notes: ${e.notes}`);
+      $notesLine.textContent = notesParts.length ? notesParts.join(" • ") : "—";
+
+      if (dt) startCountdown(dt);
+
+      applyRsvpLists(data.yesCount || 0, data.lists || { yes:[], maybe:[], no:[] });
+      setActive("");
+      setError("");
+      return;
+    }
+
+    if (data.type === "RSVP_UPDATED"){
+      applyRsvpLists(data.yesCount || 0, data.lists || { yes:[], maybe:[], no:[] });
+      setActive(String(data.myStatus || "").toLowerCase());
+      $saveStatus.textContent = "Saved ✅";
+      setTimeout(()=> { $saveStatus.textContent = "Choose your availability."; }, 1200);
+      return;
+    }
+  });
+
+  try { window.parent.postMessage({ type:"IFRAME_READY" }, "*"); } catch(_) {}
 </script>
 </body>
 </html>
