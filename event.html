@@ -397,17 +397,19 @@
     if (!data) return;
 
     if (data.type === "SCHEDULE_ERROR"){
-      setError(data.message || "Error loading event.");
-      $subtitle.textContent = "Error loading event data.";
+  const msg = data.message || "Save failed (unknown error).";
+  setError(msg);
+  $subtitle.textContent = "Error loading event data.";
 
-      // ✅ ADDED: stop the "Saving…" hang and revert status text
-      $saveStatus.textContent = "Could not save. Try again.";
-      setTimeout(()=> {
-        $saveStatus.textContent = "Choose your availability.";
-      }, 1600);
+  // ✅ stop the "Saving…" hang and show the actual error
+  $saveStatus.textContent = `Could not save: ${msg}`;
 
-      return;
-    }
+  setTimeout(()=> {
+    $saveStatus.textContent = "Choose your availability.";
+  }, 2200);
+
+  return;
+}
 
     if (data.type === "SCHEDULE_INIT" && data.view === "event"){
       // ✅ Apply club theme passed from Wix
