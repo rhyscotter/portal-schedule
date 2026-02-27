@@ -97,7 +97,7 @@ const CLUB_THEMES = {
   monmouth: { accent:"#00E5FF", accent2:"#00A3FF", bgGlow:"rgba(0,229,255,.18)" }
 };
 
-// ✅ prefer payload.theme from Wix, fallback to CLUB_THEMES
+// ✅ prefer payload.theme from parent (Wix), fallback to CLUB_THEMES
 function applyThemeFromPayload(payload){
   const slug = String(payload?.clubSlug || "default").trim().toLowerCase();
   const fallback = CLUB_THEMES[slug] || CLUB_THEMES.default;
@@ -115,7 +115,7 @@ function applyThemeFromPayload(payload){
   r.setProperty("--gameday2", accent2);
   r.setProperty("--clubGlow", glow);
 
-  // ✅ DEBUG LOG (fixed: uses payload scope, not undefined "data")
+  // ✅ Debug (NO undefined refs)
   console.log("🗓️ IFRAME THEME SET:", {
     accent,
     accent2,
@@ -184,7 +184,7 @@ window.addEventListener("message", (ev) => {
 
   if (data.type !== "SCHEDULE_INIT") return;
 
-  // theme (from Wix) -> CSS variables
+  // theme (from parent) -> CSS variables
   applyThemeFromPayload(data);
 
   $teamName.textContent = "Schedule";
