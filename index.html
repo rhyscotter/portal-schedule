@@ -101,7 +101,7 @@ const CLUB_THEMES = {
 function applyThemeFromPayload(payload){
   const slug = String(payload?.clubSlug || "default").trim().toLowerCase();
   const fallback = CLUB_THEMES[slug] || CLUB_THEMES.default;
-
+ 
   const t = payload?.theme || null;
 
   const accent  = (t?.accent  || fallback.accent);
@@ -114,7 +114,16 @@ function applyThemeFromPayload(payload){
   r.setProperty("--gameday", accent);
   r.setProperty("--gameday2", accent2);
   r.setProperty("--clubGlow", glow);
+  console.log("🗓️ IFRAME THEME SET:", {
+  accent: getComputedStyle(document.documentElement).getPropertyValue("--accent").trim(),
+  accent2: getComputedStyle(document.documentElement).getPropertyValue("--accent2").trim(),
+  glow: getComputedStyle(document.documentElement).getPropertyValue("--clubGlow").trim(),
+  clubSlug: data.clubSlug,
+  hasTheme: !!data.theme
+});
 }
+  
+  
 
 const $teamName = document.getElementById("teamName");
 const $sub = document.getElementById("sub");
