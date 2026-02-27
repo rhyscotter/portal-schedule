@@ -97,44 +97,19 @@ const CLUB_THEMES = {
   monmouth: { accent:"#00E5FF", accent2:"#00A3FF", bgGlow:"rgba(0,229,255,.18)" }
 };
 
-// ✅ Prefer payload.theme (supports BOTH {accent...} and {primary...} shapes), fallback to CLUB_THEMES
 function applyThemeFromPayload(payload){
   const slug = String(payload?.clubSlug || "default").trim().toLowerCase();
   const fallback = CLUB_THEMES[slug] || CLUB_THEMES.default;
 
   const t = payload?.theme || null;
-  const colors = t?.colors || t?.Colors || null;
 
-  // Support: accent/accent2/glow (coach/player style)
-  // Support: primary/secondary/clubGlow (applyTheme style)
-  // Support: colors.primary/colors.secondary (nested style)
-  const rawAccent =
-    (t?.accent) ??
-    (t?.primary) ??
-    (colors?.accent) ??
-    (colors?.primary) ??
-    fallback.accent;
+  // ✅ accept BOTH formats
+  const rawAccent  = (t?.accent ?? t?.primary ?? "");
+  const rawAccent2 = (t?.accent2 ?? t?.secondary ?? "");
+  const rawGlow    = (t?.glow ?? t?.clubGlow ?? t?.bgGlow ?? "");
 
-  const rawAccent2 =
-    (t?.accent2) ??
-    (t?.secondary) ??
-    (colors?.accent2) ??
-    (colors?.secondary) ??
-    fallback.accent2 ??
-    rawAccent;
-
-  const rawGlow =
-    (t?.glow) ??
-    (t?.clubGlow) ??
-    (t?.bgGlow) ??
-    (colors?.glow) ??
-    (colors?.clubGlow) ??
-    fallback.bgGlow ??
-    "rgba(123,46,255,.18)";
-
-  // normalize strings (your Wix theme showed trailing spaces)
   const accent  = String(rawAccent || "").trim()  || fallback.accent;
-  const accent2 = String(rawAccent2 || "").trim() || accent;
+  const accent2 = String(rawAccent2 || "").trim() || fallback.accent2 || accent;
   const glow    = String(rawGlow || "").trim()    || fallback.bgGlow;
 
   const r = document.documentElement.style;
@@ -144,7 +119,6 @@ function applyThemeFromPayload(payload){
   r.setProperty("--gameday2", accent2);
   r.setProperty("--clubGlow", glow);
 
-  // ✅ Console log in the correct scope (no "data is not defined")
   console.log("🗓️ IFRAME THEME SET:", {
     accent: getComputedStyle(document.documentElement).getPropertyValue("--accent").trim(),
     accent2: getComputedStyle(document.documentElement).getPropertyValue("--accent2").trim(),
@@ -172,7 +146,6 @@ function renderList(events){
   $list.innerHTML = "";
   const sorted = (events||[]).slice().sort((a,b)=>new Date(a.dateTime)-new Date(b.dateTime));
 
-  // Game Day banner = next game
   const nextGame = sorted.find(e => String(e.eventType||"").toLowerCase() === "game");
   if (nextGame){
     $gd.classList.add("on");
@@ -214,7 +187,6 @@ window.addEventListener("message", (ev) => {
 
   if (data.type !== "SCHEDULE_INIT") return;
 
-  // ✅ Theme (from parent) -> CSS variables
   applyThemeFromPayload(data);
 
   $teamName.textContent = "Schedule";
@@ -223,7 +195,6 @@ window.addEventListener("message", (ev) => {
   renderList(data.events || []);
 });
 
-// Optional handshake (some pages use it)
 try { window.parent.postMessage({ type:"IFRAME_READY" }, "*"); } catch(_) {}
 </script>
 </body>
