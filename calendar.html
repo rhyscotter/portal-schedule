@@ -11,16 +11,12 @@
     --border:rgba(255,255,255,.10);
     --text:#fff;
     --muted:rgba(255,255,255,.62);
-
-    /* theme-driven */
     --accent:#7B2EFF;
     --accent2:#B266FF;
     --clubGlow: rgba(123,46,255,.18);
   }
-
   *{box-sizing:border-box}
   body{margin:0;background:transparent;color:var(--text);font-family:Arial,sans-serif}
-
   .stage{
     min-height:100vh;
     padding:22px;
@@ -38,9 +34,7 @@
     opacity:.18;
     pointer-events:none;
   }
-
   .wrap{max-width:980px;margin:0 auto;position:relative;z-index:2}
-
   .titleRow{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
   .title{
     font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;
@@ -51,8 +45,6 @@
     position:relative;
     padding-bottom:10px;
   }
-
-  /* ✅ always-animated underline under CALENDAR */
   .title::after{
     content:"";
     position:absolute;
@@ -68,13 +60,12 @@
     50%{filter:brightness(1.12); transform:translateX(2px)}
     100%{filter:brightness(1); transform:translateX(-2px)}
   }
-
   .sub{color:var(--muted);font-size:13px;margin-top:6px}
 
   .nav{
-    display:flex; gap:10px; align-items:center;
+    display:flex; gap:10px; align-items:center; flex-wrap:wrap;
   }
-  .navBtn{
+  .navBtn,.toggleBtn,.miniBtn{
     padding:10px 12px;
     border-radius:14px;
     background:rgba(255,255,255,.04);
@@ -86,7 +77,7 @@
     cursor:pointer;
     transition:.14s ease;
   }
-  .navBtn:hover{
+  .navBtn:hover,.toggleBtn:hover,.miniBtn:hover{
     transform:translateY(-1px);
     background:rgba(255,255,255,.08);
     border-color:rgba(255,255,255,.18);
@@ -139,8 +130,6 @@
     position:relative;
     overflow:hidden;
   }
-
-  /* ✅ animated hover line + date animation */
   .day::after{
     content:"";
     position:absolute;
@@ -155,16 +144,13 @@
     transition:.18s ease;
     opacity:.95;
   }
-
   .day:hover{
     transform:translateY(-2px);
     border-color:rgba(255,255,255,.16);
     background:rgba(255,255,255,.06);
     box-shadow:0 0 0 1px rgba(255,255,255,.04), 0 0 26px var(--clubGlow);
   }
-
   .day:hover::after{ transform:scaleX(1); }
-
   .day.muted{
     opacity:.35;
     cursor:default;
@@ -218,7 +204,6 @@
     border-radius:14px;
   }
 
-  /* event list popup */
   .sheet{
     position:fixed;
     left:0; right:0; bottom:0;
@@ -244,7 +229,6 @@
     border:1px solid rgba(255,255,255,.10);
     border-radius:16px;
     padding:12px;
-    cursor:pointer;
     transition:.14s ease;
     position:relative;
     overflow:hidden;
@@ -277,6 +261,7 @@
   }
   .sheetItem:hover .sheetItemTitle::after{ transform:scaleX(1); }
   .sheetItemMeta{margin-top:8px;color:rgba(255,255,255,.72);font-size:13px;line-height:1.45}
+  .sheetActions{display:flex;gap:8px;margin-top:12px}
   .closeRow{display:flex;justify-content:flex-end}
   .closeBtn{
     margin-top:10px;
@@ -301,6 +286,7 @@
           <div class="sub" id="subtitle">Waiting for schedule data…</div>
         </div>
         <div class="nav">
+          <button class="toggleBtn" id="togglePastBtn">Show Past Events</button>
           <button class="navBtn" id="prevBtn">Prev</button>
           <button class="navBtn" id="todayBtn">Today</button>
           <button class="navBtn" id="nextBtn">Next</button>
@@ -316,7 +302,6 @@
     </div>
   </div>
 
-  <!-- bottom sheet for day events -->
   <div class="sheet" id="sheet">
     <div class="sheetInner">
       <div class="sheetTitle" id="sheetTitle">Day</div>
@@ -329,7 +314,6 @@
   </div>
 
 <script>
-  // ---------- THEMES (fallback only) ----------
   const CLUB_THEMES = {
     default:    { accent:"#7B2EFF", accent2:"#B266FF", glow:"rgba(123,46,255,.18)" },
     cherrybrook:{ accent:"#C8102E", accent2:"#FF4B5C", glow:"rgba(200,16,46,.20)" },
@@ -337,16 +321,14 @@
     monmouth:   { accent:"#00E5FF", accent2:"#00A3FF", glow:"rgba(0,229,255,.18)" }
   };
 
-  // ✅ NEW: prefer payload.theme from Wix, fallback to CLUB_THEMES
   function applyThemeFromPayload(payload){
     const slug = String(payload?.clubSlug || "default").trim().toLowerCase();
     const fb = CLUB_THEMES[slug] || CLUB_THEMES.default;
-
     const t = payload?.theme || null;
 
     const accent  = (t?.accent  || fb.accent);
     const accent2 = (t?.accent2 || fb.accent2 || accent);
-    const glow    = (t?.glow    || fb.glow    || "rgba(123,46,255,.18)");
+    const glow    = (t?.glow    || fb.glow || "rgba(123,46,255,.18)");
 
     const r = document.documentElement.style;
     r.setProperty("--accent", accent);
@@ -354,7 +336,6 @@
     r.setProperty("--clubGlow", glow);
   }
 
-  // ---------- DOM ----------
   const $subtitle = document.getElementById("subtitle");
   const $dow = document.getElementById("dow");
   const $grid = document.getElementById("grid");
@@ -364,6 +345,7 @@
   const $prev = document.getElementById("prevBtn");
   const $today = document.getElementById("todayBtn");
   const $next = document.getElementById("nextBtn");
+  const $togglePastBtn = document.getElementById("togglePastBtn");
 
   const $sheet = document.getElementById("sheet");
   const $sheetTitle = document.getElementById("sheetTitle");
@@ -371,20 +353,19 @@
   const $sheetList = document.getElementById("sheetList");
   const $closeSheet = document.getElementById("closeSheet");
 
-  // ---------- STATE ----------
   let allEvents = [];
   let monthCursor = new Date();
+  let canManage = false;
+  let showPast = false;
 
   const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
   function safe(s){ return String(s ?? "").replace(/[<>]/g,""); }
-
   function startOfMonth(d){ return new Date(d.getFullYear(), d.getMonth(), 1); }
   function endOfMonth(d){ return new Date(d.getFullYear(), d.getMonth()+1, 0); }
   function sameDay(a,b){
     return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
   }
-
   function fmtMonth(d){
     return new Intl.DateTimeFormat(undefined,{month:"long",year:"numeric"}).format(d);
   }
@@ -393,6 +374,9 @@
   }
   function fmtTime(dt){
     return new Intl.DateTimeFormat(undefined,{hour:"numeric",minute:"2-digit"}).format(dt);
+  }
+  function isPastEvent(e){
+    return e.dateTime && e.dateTime < new Date();
   }
 
   function normalizeEvent(e){
@@ -417,10 +401,10 @@
   }
 
   function getEventsForDay(day){
-    const list = allEvents
+    return allEvents
       .filter(e => e.dateTime && sameDay(e.dateTime, day))
+      .filter(e => showPast || !isPastEvent(e))
       .sort((a,b)=>a.dateTime - b.dateTime);
-    return list;
   }
 
   function renderDOW(){
@@ -439,18 +423,16 @@
     $error.innerHTML = "";
 
     const first = startOfMonth(monthCursor);
-    const last = endOfMonth(monthCursor);
     const firstDow = first.getDay();
 
-    // month label in subtitle
     $subtitle.textContent = `${fmtMonth(monthCursor)} • Click a date to view events`;
 
-    // Build cells (6 weeks max view)
     const start = new Date(first);
     start.setDate(first.getDate() - firstDow);
 
     const today = new Date();
     let totalShown = 0;
+    const hiddenCount = allEvents.filter(isPastEvent).length;
 
     for (let i=0;i<42;i++){
       const day = new Date(start);
@@ -462,13 +444,11 @@
       const cell = document.createElement("div");
       cell.className = "day" + (inMonth ? "" : " muted");
 
-      // day number
       const num = document.createElement("div");
       num.className = "num";
       num.textContent = day.getDate();
       cell.appendChild(num);
 
-      // dots/pills for events
       const dots = document.createElement("div");
       dots.className = "dots";
       dayEvents.slice(0,3).forEach(ev=>{
@@ -479,13 +459,11 @@
       });
       cell.appendChild(dots);
 
-      // click opens sheet only if in month
       cell.addEventListener("click", () => {
         if (!inMonth) return;
         openDaySheet(day, dayEvents);
       });
 
-      // small badge for today
       if (sameDay(day, today) && inMonth){
         cell.style.borderColor = "rgba(255,255,255,.18)";
       }
@@ -494,7 +472,9 @@
       totalShown += dayEvents.length;
     }
 
-    $status.textContent = `Loaded ${allEvents.length} event(s). This month shows ${totalShown} event(s).`;
+    $status.textContent = showPast
+      ? `Loaded ${allEvents.length} event(s). Showing past events.`
+      : `Loaded ${allEvents.length} event(s). ${hiddenCount ? hiddenCount + " past event(s) hidden." : ""}`;
   }
 
   function openDaySheet(day, dayEvents){
@@ -513,9 +493,6 @@
       dayEvents.forEach(ev=>{
         const item = document.createElement("div");
         item.className = "sheetItem";
-        item.addEventListener("click", () => {
-          window.parent.postMessage({ type:"OPEN_EVENT", eventId: ev._id }, "*");
-        });
 
         item.innerHTML = `
           <div class="sheetItemTitle">${safe(ev.title)}</div>
@@ -524,7 +501,29 @@
             ${safe(ev.location || "")}
             ${ev.attendanceExpected ? `<br>Expected: ${safe(ev.attendanceExpected)}` : ""}
           </div>
+          <div class="sheetActions">
+            <button class="miniBtn openBtn">Open</button>
+            ${canManage ? `<button class="miniBtn editBtn">Edit</button>` : ``}
+            ${canManage ? `<button class="miniBtn deleteBtn">Delete</button>` : ``}
+          </div>
         `;
+
+        item.querySelector(".openBtn").addEventListener("click", () => {
+          window.parent.postMessage({ type:"OPEN_EVENT", eventId: ev._id }, "*");
+        });
+
+        if (canManage) {
+          item.querySelector(".editBtn").addEventListener("click", () => {
+            window.parent.postMessage({ type:"EDIT_EVENT", eventId: ev._id }, "*");
+          });
+
+          item.querySelector(".deleteBtn").addEventListener("click", () => {
+            const ok = window.confirm(`Delete this event?\n\n${ev.title}`);
+            if (!ok) return;
+            window.parent.postMessage({ type:"DELETE_EVENT", eventId: ev._id }, "*");
+          });
+        }
+
         $sheetList.appendChild(item);
       });
     }
@@ -549,7 +548,12 @@
     renderMonth();
   });
 
-  // ---------- receive real data from Wix ----------
+  $togglePastBtn.addEventListener("click", ()=>{
+    showPast = !showPast;
+    $togglePastBtn.textContent = showPast ? "Hide Past Events" : "Show Past Events";
+    renderMonth();
+  });
+
   window.addEventListener("message", (ev) => {
     const data = ev.data;
     if (!data) return;
@@ -560,11 +564,17 @@
       return;
     }
 
+    if (data.type === "EVENTS_REFRESH"){
+      allEvents = (data.events || []).map(normalizeEvent).filter(e => e._id && e.dateTime);
+      renderMonth();
+      return;
+    }
+
     if (data.type !== "SCHEDULE_INIT") return;
     if (data.view !== "calendar") return;
 
-    // ✅ NEW: apply theme from Wix (or fallback)
     applyThemeFromPayload(data);
+    canManage = !!data.canManage;
 
     allEvents = (data.events || []).map(normalizeEvent).filter(e => e._id && e.dateTime);
 
