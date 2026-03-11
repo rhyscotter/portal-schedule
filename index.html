@@ -25,8 +25,61 @@ body{margin:0;background:transparent;color:var(--text);font-family:Arial,sans-se
   opacity:.18;pointer-events:none;
 }
 .wrap{max-width:900px;margin:0 auto;position:relative;z-index:2}
-.teamName{font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;font-size:44px;text-transform:uppercase;letter-spacing:1px;line-height:1}
+
+.topBar{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.teamName{
+  font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;
+  font-size:44px;text-transform:uppercase;letter-spacing:1px;line-height:1
+}
 .sub{margin-top:8px;color:var(--muted);font-size:14px}
+
+.actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.createBtn{
+  display:none;
+  padding:12px 14px;
+  border-radius:16px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.14);
+  color:#fff;
+  font-weight:900;
+  letter-spacing:.7px;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:.16s ease;
+  position:relative;
+  overflow:hidden;
+}
+.createBtn.on{display:inline-flex}
+.createBtn::after{
+  content:"";
+  position:absolute;
+  left:12px; right:12px; bottom:10px;
+  height:4px; border-radius:999px;
+  background:linear-gradient(90deg,var(--accent),transparent);
+  transform:scaleX(0);
+  transform-origin:left;
+  transition:.18s ease;
+}
+.createBtn:hover{
+  transform:translateY(-1px);
+  background:rgba(255,255,255,.08);
+  border-color:rgba(255,255,255,.18);
+  box-shadow:0 0 28px var(--clubGlow);
+}
+.createBtn:hover::after{transform:scaleX(1)}
+
 .gameday{
   margin-top:18px;padding:14px;border-radius:18px;
   background:linear-gradient(90deg,var(--gameday),var(--gameday2));
@@ -46,8 +99,11 @@ body{margin:0;background:transparent;color:var(--text);font-family:Arial,sans-se
 @keyframes gamedayGlow{0%{filter:brightness(1)}50%{filter:brightness(1.12)}100%{filter:brightness(1)}}
 .gTitle{font-family:Impact,sans-serif;text-transform:uppercase;letter-spacing:1px;font-size:18px;position:relative;z-index:2}
 .gSub{margin-top:4px;color:rgba(255,255,255,.88);font-size:13px;position:relative;z-index:2}
-.energyBar{height:3px;border-radius:999px;margin-top:10px;background:linear-gradient(90deg,var(--gameday),var(--gameday2));
-  animation:energyPulse 1.8s ease-in-out infinite;position:relative;z-index:2}
+.energyBar{
+  height:3px;border-radius:999px;margin-top:10px;
+  background:linear-gradient(90deg,var(--gameday),var(--gameday2));
+  animation:energyPulse 1.8s ease-in-out infinite;position:relative;z-index:2
+}
 @keyframes energyPulse{0%{opacity:.6;transform:scaleX(.98)}50%{opacity:1;transform:scaleX(1)}100%{opacity:.6;transform:scaleX(.98)}}
 .list{margin-top:18px;display:flex;flex-direction:column;gap:12px}
 .card{
@@ -56,27 +112,46 @@ body{margin:0;background:transparent;color:var(--text);font-family:Arial,sans-se
   transition:.18s ease;cursor:pointer;
 }
 .card:hover{background:rgba(26,26,26,.9);transform:translateY(-2px);border-color:rgba(255,255,255,.16)}
-.card::before{content:"";position:absolute;inset:-50% -20%;transform:rotate(-12deg);
+.card::before{
+  content:"";position:absolute;inset:-50% -20%;transform:rotate(-12deg);
   background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.05), rgba(255,255,255,0));
-  opacity:.28;pointer-events:none;}
+  opacity:.28;pointer-events:none;
+}
 .row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;position:relative;z-index:2}
-.title{font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;font-size:28px;text-transform:uppercase;position:relative;padding-bottom:6px;letter-spacing:.6px}
-.title::after{content:"";position:absolute;left:0;bottom:0;height:4px;width:100%;border-radius:999px;
+.title{
+  font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;
+  font-size:28px;text-transform:uppercase;position:relative;padding-bottom:6px;letter-spacing:.6px
+}
+.title::after{
+  content:"";position:absolute;left:0;bottom:0;height:4px;width:100%;border-radius:999px;
   background:linear-gradient(90deg,var(--gameday),transparent);
-  transform:scaleX(0);transform-origin:left;transition:.22s ease}
+  transform:scaleX(0);transform-origin:left;transition:.22s ease
+}
 .card:hover .title::after{transform:scaleX(1)}
-.pill{font-size:11px;font-weight:900;letter-spacing:.8px;text-transform:uppercase;padding:7px 10px;border-radius:999px;
-  border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:rgba(255,255,255,.86);white-space:nowrap}
-.pill.game{border-color:color-mix(in srgb, var(--gameday) 60%, transparent);background:color-mix(in srgb, var(--gameday) 18%, transparent)}
+.pill{
+  font-size:11px;font-weight:900;letter-spacing:.8px;text-transform:uppercase;padding:7px 10px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:rgba(255,255,255,.86);white-space:nowrap
+}
+.pill.game{
+  border-color:color-mix(in srgb, var(--gameday) 60%, transparent);
+  background:color-mix(in srgb, var(--gameday) 18%, transparent)
+}
 .meta{margin-top:10px;color:rgba(255,255,255,.72);font-size:13px;line-height:1.45;position:relative;z-index:2}
 .err{margin-top:16px;color:#fff;background:rgba(255,0,0,.12);border:1px solid rgba(255,0,0,.35);padding:12px;border-radius:14px}
 </style>
 </head>
-
 <body>
 <div class="stage"><div class="wrap">
-  <div class="teamName" id="teamName">Schedule</div>
-  <div class="sub" id="sub">Waiting for data…</div>
+  <div class="topBar">
+    <div>
+      <div class="teamName" id="teamName">Schedule</div>
+      <div class="sub" id="sub">Waiting for data…</div>
+    </div>
+
+    <div class="actions">
+      <button class="createBtn" id="createBtn">Create Event</button>
+    </div>
+  </div>
 
   <div class="gameday" id="gameday">
     <div class="gTitle">Game Day Mode</div>
@@ -89,7 +164,6 @@ body{margin:0;background:transparent;color:var(--text);font-family:Arial,sans-se
 </div></div>
 
 <script>
-// ✅ Keep your fallback mapping (optional)
 const CLUB_THEMES = {
   default: { accent:"#7B2EFF", accent2:"#B266FF", bgGlow:"rgba(123,46,255,.18)" },
   cherrybrook: { accent:"#C8102E", accent2:"#FF4B5C", bgGlow:"rgba(200,16,46,.20)" },
@@ -100,17 +174,11 @@ const CLUB_THEMES = {
 function applyThemeFromPayload(payload){
   const slug = String(payload?.clubSlug || "default").trim().toLowerCase();
   const fallback = CLUB_THEMES[slug] || CLUB_THEMES.default;
-
   const t = payload?.theme || null;
 
-  // ✅ accept BOTH formats
-  const rawAccent  = (t?.accent ?? t?.primary ?? "");
-  const rawAccent2 = (t?.accent2 ?? t?.secondary ?? "");
-  const rawGlow    = (t?.glow ?? t?.clubGlow ?? t?.bgGlow ?? "");
-
-  const accent  = String(rawAccent || "").trim()  || fallback.accent;
-  const accent2 = String(rawAccent2 || "").trim() || fallback.accent2 || accent;
-  const glow    = String(rawGlow || "").trim()    || fallback.bgGlow;
+  const accent  = (t?.accent  || fallback.accent);
+  const accent2 = (t?.accent2 || fallback.accent2 || accent);
+  const glow    = (t?.glow    || fallback.bgGlow || "rgba(123,46,255,.18)");
 
   const r = document.documentElement.style;
   r.setProperty("--accent", accent);
@@ -118,15 +186,6 @@ function applyThemeFromPayload(payload){
   r.setProperty("--gameday", accent);
   r.setProperty("--gameday2", accent2);
   r.setProperty("--clubGlow", glow);
-
-  console.log("🗓️ IFRAME THEME SET:", {
-    accent: getComputedStyle(document.documentElement).getPropertyValue("--accent").trim(),
-    accent2: getComputedStyle(document.documentElement).getPropertyValue("--accent2").trim(),
-    glow: getComputedStyle(document.documentElement).getPropertyValue("--clubGlow").trim(),
-    clubSlug: slug,
-    hasTheme: !!t,
-    rawTheme: t
-  });
 }
 
 const $teamName = document.getElementById("teamName");
@@ -135,6 +194,7 @@ const $list = document.getElementById("list");
 const $err = document.getElementById("err");
 const $gd = document.getElementById("gameday");
 const $gdSub = document.getElementById("gamedaySub");
+const $createBtn = document.getElementById("createBtn");
 
 function fmt(dt){
   const d = new Date(dt);
@@ -176,6 +236,10 @@ function renderList(events){
   });
 }
 
+$createBtn.addEventListener("click", () => {
+  window.parent.postMessage({ type:"OPEN_CREATE_EVENT" }, "*");
+});
+
 window.addEventListener("message", (ev) => {
   const data = ev.data;
   if (!data) return;
@@ -191,6 +255,9 @@ window.addEventListener("message", (ev) => {
 
   $teamName.textContent = "Schedule";
   $sub.textContent = `Loaded ${data.events?.length || 0} event(s)`;
+
+  if (data.canCreate) $createBtn.classList.add("on");
+  else $createBtn.classList.remove("on");
 
   renderList(data.events || []);
 });
