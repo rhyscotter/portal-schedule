@@ -33,7 +33,6 @@ body{margin:0;background:transparent;color:var(--text);font-family:Arial,sans-se
   gap:12px;
   flex-wrap:wrap;
 }
-
 .teamName{
   font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;
   font-size:44px;text-transform:uppercase;letter-spacing:1px;line-height:1
@@ -44,10 +43,10 @@ body{margin:0;background:transparent;color:var(--text);font-family:Arial,sans-se
   display:flex;
   gap:10px;
   align-items:center;
+  flex-wrap:wrap;
 }
 
-.createBtn{
-  display:none;
+.createBtn,.toggleBtn,.miniBtn{
   padding:12px 14px;
   border-radius:16px;
   background:rgba(255,255,255,.04);
@@ -61,24 +60,25 @@ body{margin:0;background:transparent;color:var(--text);font-family:Arial,sans-se
   position:relative;
   overflow:hidden;
 }
-.createBtn.on{display:inline-flex}
-.createBtn::after{
+.createBtn,.miniBtn{display:none}
+.createBtn.on,.miniBtn.on{display:inline-flex}
+.createBtn::after,.toggleBtn::after,.miniBtn::after{
   content:"";
   position:absolute;
-  left:12px; right:12px; bottom:10px;
-  height:4px; border-radius:999px;
+  left:12px;right:12px;bottom:10px;
+  height:4px;border-radius:999px;
   background:linear-gradient(90deg,var(--accent),transparent);
   transform:scaleX(0);
   transform-origin:left;
   transition:.18s ease;
 }
-.createBtn:hover{
+.createBtn:hover,.toggleBtn:hover,.miniBtn:hover{
   transform:translateY(-1px);
   background:rgba(255,255,255,.08);
   border-color:rgba(255,255,255,.18);
   box-shadow:0 0 28px var(--clubGlow);
 }
-.createBtn:hover::after{transform:scaleX(1)}
+.createBtn:hover::after,.toggleBtn:hover::after,.miniBtn:hover::after{transform:scaleX(1)}
 
 .gameday{
   margin-top:18px;padding:14px;border-radius:18px;
@@ -99,11 +99,8 @@ body{margin:0;background:transparent;color:var(--text);font-family:Arial,sans-se
 @keyframes gamedayGlow{0%{filter:brightness(1)}50%{filter:brightness(1.12)}100%{filter:brightness(1)}}
 .gTitle{font-family:Impact,sans-serif;text-transform:uppercase;letter-spacing:1px;font-size:18px;position:relative;z-index:2}
 .gSub{margin-top:4px;color:rgba(255,255,255,.88);font-size:13px;position:relative;z-index:2}
-.energyBar{
-  height:3px;border-radius:999px;margin-top:10px;
-  background:linear-gradient(90deg,var(--gameday),var(--gameday2));
-  animation:energyPulse 1.8s ease-in-out infinite;position:relative;z-index:2
-}
+.energyBar{height:3px;border-radius:999px;margin-top:10px;background:linear-gradient(90deg,var(--gameday),var(--gameday2));
+  animation:energyPulse 1.8s ease-in-out infinite;position:relative;z-index:2}
 @keyframes energyPulse{0%{opacity:.6;transform:scaleX(.98)}50%{opacity:1;transform:scaleX(1)}100%{opacity:.6;transform:scaleX(.98)}}
 .list{margin-top:18px;display:flex;flex-direction:column;gap:12px}
 .card{
@@ -112,32 +109,28 @@ body{margin:0;background:transparent;color:var(--text);font-family:Arial,sans-se
   transition:.18s ease;cursor:pointer;
 }
 .card:hover{background:rgba(26,26,26,.9);transform:translateY(-2px);border-color:rgba(255,255,255,.16)}
-.card::before{
-  content:"";position:absolute;inset:-50% -20%;transform:rotate(-12deg);
+.card::before{content:"";position:absolute;inset:-50% -20%;transform:rotate(-12deg);
   background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.05), rgba(255,255,255,0));
-  opacity:.28;pointer-events:none;
-}
+  opacity:.28;pointer-events:none;}
 .row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;position:relative;z-index:2}
-.title{
-  font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;
-  font-size:28px;text-transform:uppercase;position:relative;padding-bottom:6px;letter-spacing:.6px
-}
-.title::after{
-  content:"";position:absolute;left:0;bottom:0;height:4px;width:100%;border-radius:999px;
+.title{font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;font-size:28px;text-transform:uppercase;position:relative;padding-bottom:6px;letter-spacing:.6px}
+.title::after{content:"";position:absolute;left:0;bottom:0;height:4px;width:100%;border-radius:999px;
   background:linear-gradient(90deg,var(--gameday),transparent);
-  transform:scaleX(0);transform-origin:left;transition:.22s ease
-}
+  transform:scaleX(0);transform-origin:left;transition:.22s ease}
 .card:hover .title::after{transform:scaleX(1)}
-.pill{
-  font-size:11px;font-weight:900;letter-spacing:.8px;text-transform:uppercase;padding:7px 10px;border-radius:999px;
-  border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:rgba(255,255,255,.86);white-space:nowrap
-}
-.pill.game{
-  border-color:color-mix(in srgb, var(--gameday) 60%, transparent);
-  background:color-mix(in srgb, var(--gameday) 18%, transparent)
-}
+.pill{font-size:11px;font-weight:900;letter-spacing:.8px;text-transform:uppercase;padding:7px 10px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:rgba(255,255,255,.86);white-space:nowrap}
+.pill.game{border-color:color-mix(in srgb, var(--gameday) 60%, transparent);background:color-mix(in srgb, var(--gameday) 18%, transparent)}
 .meta{margin-top:10px;color:rgba(255,255,255,.72);font-size:13px;line-height:1.45;position:relative;z-index:2}
+.cardActions{
+  display:flex;
+  gap:8px;
+  margin-top:12px;
+  position:relative;
+  z-index:2;
+}
 .err{margin-top:16px;color:#fff;background:rgba(255,0,0,.12);border:1px solid rgba(255,0,0,.35);padding:12px;border-radius:14px}
+.hiddenNote{margin-top:12px;color:rgba(255,255,255,.58);font-size:12px}
 </style>
 </head>
 <body>
@@ -149,6 +142,7 @@ body{margin:0;background:transparent;color:var(--text);font-family:Arial,sans-se
     </div>
 
     <div class="actions">
+      <button class="toggleBtn" id="togglePastBtn">Show Past Events</button>
       <button class="createBtn" id="createBtn">Create Event</button>
     </div>
   </div>
@@ -159,6 +153,7 @@ body{margin:0;background:transparent;color:var(--text);font-family:Arial,sans-se
     <div class="energyBar"></div>
   </div>
 
+  <div class="hiddenNote" id="hiddenNote"></div>
   <div class="list" id="list"></div>
   <div id="err"></div>
 </div></div>
@@ -195,6 +190,15 @@ const $err = document.getElementById("err");
 const $gd = document.getElementById("gameday");
 const $gdSub = document.getElementById("gamedaySub");
 const $createBtn = document.getElementById("createBtn");
+const $togglePastBtn = document.getElementById("togglePastBtn");
+const $hiddenNote = document.getElementById("hiddenNote");
+
+let state = {
+  events: [],
+  canCreate: false,
+  canManage: false,
+  showPast: false
+};
 
 function fmt(dt){
   const d = new Date(dt);
@@ -202,11 +206,27 @@ function fmt(dt){
 }
 function safe(s){ return String(s??"").replace(/[<>]/g,""); }
 
-function renderList(events){
-  $list.innerHTML = "";
-  const sorted = (events||[]).slice().sort((a,b)=>new Date(a.dateTime)-new Date(b.dateTime));
+function isPastEvent(e){
+  return new Date(e.dateTime) < new Date();
+}
 
-  const nextGame = sorted.find(e => String(e.eventType||"").toLowerCase() === "game");
+function getVisibleEvents(){
+  const sorted = (state.events || []).slice().sort((a,b)=>new Date(a.dateTime)-new Date(b.dateTime));
+  if (state.showPast) return sorted;
+  return sorted.filter(e => !isPastEvent(e));
+}
+
+function renderList(){
+  $list.innerHTML = "";
+  const allSorted = (state.events || []).slice().sort((a,b)=>new Date(a.dateTime)-new Date(b.dateTime));
+  const visible = getVisibleEvents();
+
+  const hiddenCount = allSorted.filter(isPastEvent).length;
+  $hiddenNote.textContent = state.showPast
+    ? (hiddenCount ? `${hiddenCount} past event(s) shown.` : "")
+    : (hiddenCount ? `${hiddenCount} past event(s) hidden.` : "");
+
+  const nextGame = allSorted.find(e => !isPastEvent(e) && String(e.eventType||"").toLowerCase() === "game");
   if (nextGame){
     $gd.classList.add("on");
     const opp = nextGame.opponent ? ` vs ${nextGame.opponent}` : "";
@@ -215,12 +235,11 @@ function renderList(events){
     $gd.classList.remove("on");
   }
 
-  sorted.forEach(e => {
+  visible.forEach(e => {
     const type = String(e.eventType||"").toLowerCase();
     const title = type === "game" ? `Game${e.opponent ? " vs " + e.opponent : ""}` : (e.eventType || "Event");
     const el = document.createElement("div");
     el.className = "card";
-    el.onclick = () => window.parent.postMessage({ type:"OPEN_EVENT", eventId: e._id }, "*");
 
     el.innerHTML = `
       <div class="row">
@@ -231,13 +250,48 @@ function renderList(events){
         <strong>${safe(fmt(e.dateTime))}</strong><br>
         ${safe(e.location || "")}${e.attendanceExpected ? `<br>Expected: ${safe(e.attendanceExpected)}` : ""}
       </div>
+      <div class="cardActions">
+        <button class="miniBtn on openBtn">Open</button>
+        ${state.canManage ? `<button class="miniBtn on editBtn">Edit</button>` : ``}
+        ${state.canManage ? `<button class="miniBtn on deleteBtn">Delete</button>` : ``}
+      </div>
     `;
+
+    el.querySelector(".openBtn").addEventListener("click", (evt) => {
+      evt.stopPropagation();
+      window.parent.postMessage({ type:"OPEN_EVENT", eventId: e._id }, "*");
+    });
+
+    if (state.canManage) {
+      el.querySelector(".editBtn").addEventListener("click", (evt) => {
+        evt.stopPropagation();
+        window.parent.postMessage({ type:"EDIT_EVENT", eventId: e._id }, "*");
+      });
+
+      el.querySelector(".deleteBtn").addEventListener("click", (evt) => {
+        evt.stopPropagation();
+        const ok = window.confirm(`Delete this event?\n\n${title}`);
+        if (!ok) return;
+        window.parent.postMessage({ type:"DELETE_EVENT", eventId: e._id }, "*");
+      });
+    }
+
+    el.addEventListener("click", () => {
+      window.parent.postMessage({ type:"OPEN_EVENT", eventId: e._id }, "*");
+    });
+
     $list.appendChild(el);
   });
 }
 
 $createBtn.addEventListener("click", () => {
   window.parent.postMessage({ type:"OPEN_CREATE_EVENT" }, "*");
+});
+
+$togglePastBtn.addEventListener("click", () => {
+  state.showPast = !state.showPast;
+  $togglePastBtn.textContent = state.showPast ? "Hide Past Events" : "Show Past Events";
+  renderList();
 });
 
 window.addEventListener("message", (ev) => {
@@ -249,17 +303,27 @@ window.addEventListener("message", (ev) => {
     return;
   }
 
+  if (data.type === "EVENTS_REFRESH"){
+    state.events = data.events || [];
+    renderList();
+    return;
+  }
+
   if (data.type !== "SCHEDULE_INIT") return;
 
   applyThemeFromPayload(data);
 
-  $teamName.textContent = "Schedule";
-  $sub.textContent = `Loaded ${data.events?.length || 0} event(s)`;
+  state.events = data.events || [];
+  state.canCreate = !!data.canCreate;
+  state.canManage = !!data.canManage;
 
-  if (data.canCreate) $createBtn.classList.add("on");
+  $teamName.textContent = "Schedule";
+  $sub.textContent = `Loaded ${state.events.length || 0} event(s)`;
+
+  if (state.canCreate) $createBtn.classList.add("on");
   else $createBtn.classList.remove("on");
 
-  renderList(data.events || []);
+  renderList();
 });
 
 try { window.parent.postMessage({ type:"IFRAME_READY" }, "*"); } catch(_) {}
